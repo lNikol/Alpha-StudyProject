@@ -3,15 +3,15 @@
 #client
 
 # dependencies
-client//node_modules
-client//.pnp
+client/node_modules
+client/.pnp
 client/.pnp.js
 
 # testing
-client//coverage
+client/coverage
 
 # production
-client//build
+client/build
 
 # misc
 client/.DS_Store

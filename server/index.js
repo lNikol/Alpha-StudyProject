@@ -13,9 +13,7 @@ app.use("/auth", authRouter);
 app.post("/sendExample", urlencodedParser, (req, res) => {
   res.download(path.join(template_path));
 });
-app.post("/test", (req, res) => {
-  console.log(req);
-});
+
 const start = async () => {
   try {
     await mongoose.connect(connect);

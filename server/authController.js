@@ -1,6 +1,6 @@
 const User = require("./models/User");
 const Role = require("./models/Role");
-const Card = require('./models/Card')
+const Card = require("./models/Card");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
@@ -34,6 +34,7 @@ class authController {
         username,
         password: hashPassword,
         roles: [userRole.value],
+        studySet: {},
       });
       await user.save();
       return res.json({ message: "success" });
@@ -47,6 +48,7 @@ class authController {
     try {
       const { username, password } = req.body;
       const user = await User.findOne({ username });
+      console.log(user.studySet);
       if (!user) {
         return res.status(400).json({ message: `User ${username} not found` });
       }
@@ -66,12 +68,43 @@ class authController {
   async getUsers(req, res) {
     try {
       const users = await User.find();
+      const File = new File();
+      File.save();
+      const StudySet = new StudySet();
+      StudySet.save();
+
       res.json(users);
     } catch (e) {
       console.log(e);
     }
   }
-  
+
+  async createCard(req, res) {
+    try {
+      const { username } = req.body;
+      const { cardname, descriptions, tags } = req.body; //req.body
+      console.log(cardname, descriptions, tags);
+      const candidate = await User.findOne({ username });
+
+      let cardExists = candidate.cards.every((e) => {
+        e.cardname != cardname;
+      });
+      console.log(!cardExists);
+      // candidate.cards.push(
+      //   new Card({
+      //     name: cardname,
+      //     descriptions: descriptions,
+      //     tags: tags ? tags : [],
+      //     date: new Date().getTime(),
+      //   })
+      // );
+      // candidate.save();
+      return { message: "Card was created" };
+    } catch (e) {
+      console.log(e);
+      res.send(400).json({ message: "Error in creating card" });
+    }
+  }
   // async userFile(req, res){
   //   try{
   //     const errors = validationResult(req);
@@ -86,14 +119,11 @@ class authController {
   //   }
   // }
 
-  async test(req,res){
-    console.log(req.body)
-  }
-  async getCards(req,res){
+  async getCards(req, res) {
     try {
-      
-      let {username} = req.body;
+      let { username } = req.body;
       const candidate = await User.findOne({ username });
+
       // candidate.cards.push(
       //   new Card({
       //       name:"fromPush",
@@ -110,12 +140,12 @@ class authController {
       //   user:candidate._id
       // })
       // await card.save();
-      
+
       const cards = await Card.find(); // получение карточек, которые находятся не в пользователе
       res.json(cards);
     } catch (e) {
       console.log(e);
-      res.send(400).json({message:"Error during getting cards"})
+      res.send(400).json({ message: "Error during getting cards" });
     }
   }
 }

@@ -8,7 +8,7 @@ const User = new Schema({
     default: [],
     ref: "Card",
     validate: {
-      validator: function (v) {
+      validator: (v) => {
         return v.length <= 1000;
       },
       message: (props) => `${props.path} exceeds the limit of 1000`,

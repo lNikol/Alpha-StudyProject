@@ -115,6 +115,7 @@ class authController {
                       date: new Date().getTime(),
                     })
                   );
+                  userCardsNames = candidate.cards.map((i) => i.name);
                 }
               });
 
@@ -146,6 +147,8 @@ class authController {
               descriptions: descriptions,
               tags: tags ? tags : [],
               date: new Date().getTime(),
+              user: candidate._id,
+              favorite: false,
             })
           );
           await candidate.save();
@@ -155,6 +158,28 @@ class authController {
     } catch (e) {
       console.log(e);
       res.status(400).json({ message: "Error in creating card" });
+    }
+  }
+
+  async changePassword(req, res) {
+    try {
+    } catch (e) {
+      console.log(e);
+      res.status(400).json({ message: "Error during changing password" });
+    }
+  }
+
+  async deleteAccount(req, res) {
+    try {
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async logout(req, res) {
+    try {
+    } catch (e) {
+      console.log(e);
     }
   }
 }

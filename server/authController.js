@@ -5,6 +5,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const { secret } = require("./config");
+const excelReader = require("./helpers/excelReader");
+const saveUserFile = require("./helpers/saveUserFile");
+const deleteUserFile = require("./helpers/deleteUserFile");
 
 const generateAccessToken = (id, roles) => {
   const payload = { id, roles };
@@ -20,7 +23,7 @@ class authController {
           .status(400)
           .json({ message: "Error during registration", errors });
       }
-      const { username, password } = req.body;
+      const { username, password } = req.headers;
       const candidate = await User.findOne({ username });
       if (candidate) {
         return res
@@ -46,9 +49,8 @@ class authController {
 
   async login(req, res) {
     try {
-      const { username, password } = req.body;
+      const { username, password } = req.headers;
       const user = await User.findOne({ username });
-      console.log(user.studySet);
       if (!user) {
         return res.status(400).json({ message: `User ${username} not found` });
       }
@@ -68,11 +70,6 @@ class authController {
   async getUsers(req, res) {
     try {
       const users = await User.find();
-      const File = new File();
-      File.save();
-      const StudySet = new StudySet();
-      StudySet.save();
-
       res.json(users);
     } catch (e) {
       console.log(e);
@@ -81,71 +78,83 @@ class authController {
 
   async createCard(req, res) {
     try {
-      const { username } = req.body;
-      const { cardname, descriptions, tags } = req.body; //req.body
-      console.log(cardname, descriptions, tags);
+      let { username, cardname, descriptions, tags } = req.headers; //req.headers / req.body
       const candidate = await User.findOne({ username });
+      console.log(candidate.cards);
+      let userCardsNames = candidate.cards.map((i) => i.name);
+      let cardExists = false;
 
-      let cardExists = candidate.cards.every((e) => {
-        e.cardname != cardname;
-      });
-      console.log(!cardExists);
-      // candidate.cards.push(
-      //   new Card({
-      //     name: cardname,
-      //     descriptions: descriptions,
-      //     tags: tags ? tags : [],
-      //     date: new Date().getTime(),
-      //   })
-      // );
-      // candidate.save();
-      return { message: "Card was created" };
+      let userFile = "";
+      if (req.files) userFile = req.files.userFile;
+
+      if (userFile != "") {
+        if (!userFile.name.includes(".xlsx"))
+          return res
+            .status(401)
+            .json({ message: "File extension isn't .xlsx" });
+
+        let [rootPath, userFilePath] = await saveUserFile(
+          userFile,
+          candidate._id
+        );
+        await excelReader(userFilePath)
+          .then(async (cards) => {
+            if (cards) {
+              let existsCards = [];
+              let startLength = candidate.cards.length;
+              cards.map((i) => {
+                cardExists = userCardsNames.includes(i.name) ? true : false;
+                if (cardExists) {
+                  existsCards.push(i.name);
+                } else {
+                  candidate.cards.push(
+                    new Card({
+                      name: i.name,
+                      descriptions: i.descriptions,
+                      tags: i.tags ? i.tags : [],
+                      date: new Date().getTime(),
+                    })
+                  );
+                }
+              });
+
+              if (startLength != candidate.cards.length) await candidate.save();
+
+              if (existsCards.length > 0) {
+                res.status(400).json({
+                  message: "Cards weren't added because they already exist",
+                  existsCards: existsCards,
+                });
+              } else {
+                res.json({ message: "The cards have been added successfully" });
+              }
+            }
+
+            await deleteUserFile(rootPath, userFilePath);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      } else {
+        cardExists = userCardsNames.includes(cardname) ? true : false;
+        if (cardExists)
+          return res.status(400).json({ message: "This card already exists" });
+        else {
+          candidate.cards.push(
+            new Card({
+              name: cardname,
+              descriptions: descriptions,
+              tags: tags ? tags : [],
+              date: new Date().getTime(),
+            })
+          );
+          await candidate.save();
+        }
+        return res.json({ message: "Card was created" });
+      }
     } catch (e) {
       console.log(e);
-      res.send(400).json({ message: "Error in creating card" });
-    }
-  }
-  // async userFile(req, res){
-  //   try{
-  //     const errors = validationResult(req);
-  //     if (!errors.isEmpty()) {
-  //       return res
-  //         .status(400)
-  //         .json({ message: "Error during sending file", errors });
-  //     }
-  //   } catch(e){
-  //     console.log(e);
-  //     res.status(400).json({message:"Send userFile error"})
-  //   }
-  // }
-
-  async getCards(req, res) {
-    try {
-      let { username } = req.body;
-      const candidate = await User.findOne({ username });
-
-      // candidate.cards.push(
-      //   new Card({
-      //       name:"fromPush",
-      //       descriptions:['push1','push2'],
-      //       tags:[],
-      //       date:new Date().getTime(),
-      //       user:candidate._id
-      //     }))
-      // const card = new Card({
-      //   name:"testCard3",
-      //   descriptions:['test13','test23'],
-      //   tags:[],
-      //   date:new Date().getTime(),
-      //   user:candidate._id
-      // })
-      // await card.save();
-
-      const cards = await Card.find(); // получение карточек, которые находятся не в пользователе
-      res.json(cards);
-    } catch (e) {
-      console.log(e);
-      res.send(400).json({ message: "Error during getting cards" });
+      res.status(400).json({ message: "Error in creating card" });
     }
   }
 }

@@ -16,8 +16,11 @@ router.post(
   controller.registration
 );
 router.post("/login", controller.login);
-router.get("/users", roleMiddleware(["ADMIN"]), controller.getUsers);
-router.get("/cards", roleMiddleware(["USER"]), controller.getCards);
-router.post("/createCard", controller.createCard);
-//router.post('sendExample',controller.sendExample)
+router.get("/users", roleMiddleware(["USER"]), controller.getUsers);
+router.post(
+  "/createCard",
+  roleMiddleware(["USER", "ADMIN"]),
+  controller.createCard
+);
+
 module.exports = router;

@@ -1,86 +1,16 @@
-const User = require("./models/User");
-const Role = require("./models/Role");
-const Card = require("./models/Card");
+const excelReader = require("../helpers/excelReader");
+const saveUserFile = require("../helpers/saveUserFile");
+const deleteUserFile = require("../helpers/deleteUserFile");
+const { template_path } = require("../config");
+const User = require("../models/User");
+const Card = require("../models/Card");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { validationResult } = require("express-validator");
-const { secret } = require("./config");
-const excelReader = require("./helpers/excelReader");
-const saveUserFile = require("./helpers/saveUserFile");
-const deleteUserFile = require("./helpers/deleteUserFile");
 
-const generateAccessToken = (id, roles) => {
-  const payload = { id, roles };
-  return jwt.sign(payload, secret, { expiresIn: "1h" });
-};
-
-class authController {
-  async registration(req, res) {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({ message: "Error during registration", errors });
-      }
-      const { username, password } = req.headers;
-      const candidate = await User.findOne({ username });
-      if (candidate) {
-        return res
-          .status(400)
-          .json({ message: "User with this name already exists" });
-      }
-      const hashPassword = bcrypt.hashSync(password, 7);
-      const userRole = await Role.findOne({ value: "USER" });
-
-      const user = new User({
-        username,
-        password: hashPassword,
-        roles: [userRole.value],
-        studySet: {},
-      });
-      await user.save();
-      return res.json({ message: "success" });
-    } catch (e) {
-      console.log(e);
-      res.status(400).json({ message: "Registration error" });
-    }
-  }
-
-  async login(req, res) {
-    try {
-      const { username, password } = req.headers;
-      const user = await User.findOne({ username });
-      if (!user) {
-        return res.status(400).json({ message: `User ${username} not found` });
-      }
-
-      const validPassword = bcrypt.compareSync(password, user.password);
-      if (!validPassword) {
-        return res.status(400).json({ message: "Invalid password entered" });
-      }
-      const token = generateAccessToken(user._id, user.roles);
-      return res.json({ token });
-    } catch (e) {
-      console.log(e);
-      res.status(400).json({ message: "Login error" });
-    }
-  }
-
-  async getUsers(req, res) {
-    try {
-      const users = await User.find();
-      res.json(users);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
+class UserController {
   async createCard(req, res) {
     try {
       let { username, cardname, descriptions, tags } = req.headers; //req.headers / req.body
       const candidate = await User.findOne({ username });
-      console.log(candidate.cards);
       let userCardsNames = candidate.cards.map((i) => i.name);
       let cardExists = false;
 
@@ -122,7 +52,7 @@ class authController {
               if (startLength != candidate.cards.length) await candidate.save();
 
               if (existsCards.length > 0) {
-                res.status(400).json({
+                res.status(500).json({
                   message: "Cards weren't added because they already exist",
                   existsCards: existsCards,
                 });
@@ -135,11 +65,14 @@ class authController {
           })
           .catch((e) => {
             console.log(e);
+            res
+              .send(500)
+              .json({ message: "Error occurred while reading the excel file" });
           });
       } else {
         cardExists = userCardsNames.includes(cardname) ? true : false;
         if (cardExists)
-          return res.status(400).json({ message: "This card already exists" });
+          return res.status(500).json({ message: "This card already exists" });
         else {
           candidate.cards.push(
             new Card({
@@ -157,15 +90,33 @@ class authController {
       }
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Error in creating card" });
+      res.status(500).json({ message: "Error in creating card" });
     }
   }
 
   async changePassword(req, res) {
+    const { username, newpassword } = req.headers;
+    const candidate = await User.findOne({ username });
+    const hashPassword = bcrypt.hashSync(newpassword, 7);
+    candidate.password = hashPassword;
+
+    await candidate.save();
+    res.json(candidate);
     try {
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Error during changing password" });
+      res
+        .status(500)
+        .json({ message: "Error occurred while changing password" });
+    }
+  }
+
+  async sendExample(req, res) {
+    try {
+      res.download(template_path);
+    } catch (e) {
+      console.log(e);
+      res.send(500).json(e);
     }
   }
 
@@ -183,4 +134,4 @@ class authController {
     }
   }
 }
-module.exports = new authController();
+module.exports = new UserController();

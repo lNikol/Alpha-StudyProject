@@ -1,8 +1,8 @@
 const Router = require("express");
 const router = new Router();
-const controller = require("./authController");
+const controller = require("../controllers/authController");
 const { check } = require("express-validator");
-const roleMiddleware = require("./middleware/roleMiddleware");
+const roleMiddleware = require("../middleware/roleMiddleware");
 
 router.post(
   "/registration",
@@ -15,12 +15,8 @@ router.post(
   ],
   controller.registration
 );
+
 router.post("/login", controller.login);
 router.get("/users", roleMiddleware(["USER"]), controller.getUsers);
-router.post(
-  "/createCard",
-  roleMiddleware(["USER", "ADMIN"]),
-  controller.createCard
-);
 
 module.exports = router;

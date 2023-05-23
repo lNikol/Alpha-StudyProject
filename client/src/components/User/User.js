@@ -1,10 +1,11 @@
 import axios from "axios";
 import { useState } from "react";
+
 const User = () => {
   const [userInfo, setUserInfo] = useState("");
 
   const getReq = axios.create({
-    baseURL: "http://localhost:5000/auth",
+    baseURL: "http://localhost:5000/user", // /auth  /user
     headers: {
       username: "admin2",
       password: "admin2",
@@ -15,17 +16,6 @@ const User = () => {
       tags: ["ra", "afs"],
     },
   });
-
-  const handler = () => {
-    getReq
-      .post("createCard")
-      .then((res) => {
-        console.log(res.data);
-        setUserInfo(res.data);
-        console.log(userInfo);
-      })
-      .catch((err) => console.log(err));
-  };
 
   const sendingFile = (e) => {
     let file = e.target.files[0];
@@ -56,7 +46,13 @@ const User = () => {
   return (
     <>
       <input type="file" name="userFile" onChange={sendingFile} />
-      <button onClick={handler}>Check</button>
+
+      <form
+        action="http://localhost:5000/user/sendExample"
+        method="post"
+        enctype="multipart/form-data">
+        <input type="submit" value="Get example" />
+      </form>
     </>
   );
 };

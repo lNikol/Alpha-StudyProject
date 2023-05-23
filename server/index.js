@@ -1,4 +1,4 @@
-const { template_path, connect } = require("./config");
+const { connect } = require("./config");
 
 const express = require("express");
 const upload = require("express-fileupload");

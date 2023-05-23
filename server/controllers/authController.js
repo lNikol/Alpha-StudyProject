@@ -7,6 +7,7 @@ const Role = require("../models/Role");
 
 const generateAccessToken = (id, roles) => {
   const payload = { id, roles };
+  console.log(jwt);
   return jwt.sign(payload, secret, { expiresIn: "1h" });
 };
 
@@ -32,7 +33,7 @@ class authController {
       const user = new User({
         username,
         password: hashPassword,
-        roles: [userRole.value],
+        roles: ["USER"], // работает не корректно //userRole.value
         studySet: {},
       });
 

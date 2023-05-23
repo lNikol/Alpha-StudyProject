@@ -7,10 +7,10 @@ const User = () => {
   const getReq = axios.create({
     baseURL: "http://localhost:5000/user", // /auth  /user
     headers: {
-      username: "admin2",
-      password: "admin2",
+      username: "test",
+      password: "test",
       authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0NmJiMDMwZGRiZWRhNjgwYzQwMTNhMyIsInJvbGVzIjpbIkFETUlOIl0sImlhdCI6MTY4NDc3OTM3MiwiZXhwIjoxNjg0NzgyOTcyfQ.dS_Aez8OeSm1OJGwBminzlxuv1Mp61xeW6wdaXpFu60",
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0NmNlYjhhZmM1NDdkMjgxNjFmMWViMCIsInJvbGVzIjpbIlVTRVIiXSwiaWF0IjoxNjg0ODYzMDUxLCJleHAiOjE2ODQ4NjY2NTF9.iGov2ls94pJN_nKb7Awr72459jFpHlJaHauoZOgFJUg",
       cardname: "name",
       descriptions: "fas",
       tags: ["ra", "afs"],
@@ -37,6 +37,9 @@ const User = () => {
       })
       .catch((err) => {
         if (err.response) {
+          let existsCards = err.response.data.existsCards;
+          (existsCards?.length>=1)?existsCards.map((i)=>console.log(i)):console.log('');
+          
           if (err.response.data.message) alert(err.response.data.message);
         } else {
           alert(err);

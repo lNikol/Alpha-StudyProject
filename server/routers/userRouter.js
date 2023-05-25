@@ -60,4 +60,6 @@ router.post(
   userController.searchCard
 );
 
+router.post('/communityCards', roleMiddleware(["USER","ADMIN"]), userController.getCommunityCards)
+
 module.exports = router;

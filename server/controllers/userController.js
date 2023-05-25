@@ -33,8 +33,7 @@ class UserController {
 
   async createCard(req, res) {
     try {
-      let { username, cardname, descriptions, tags } = req.body;
-      console.log(req.body);
+      let { username, cardname, descriptions, tags } = req.headers;
       const candidate = await User.findOne({ username });
       let userCardsNames = candidate.cards.map((i) => i.name);
       let cardExists = false;
@@ -99,6 +98,10 @@ class UserController {
         if (cardExists)
           return res.status(500).json({ message: "This card already exists" });
         else {
+          if(!cardname || !descriptions || !tags){
+            return res.status(400).json({message: "Incomplete data provided"})
+          }
+          else{
           candidate.cards.push(
             new Card({
               name: cardname,
@@ -109,6 +112,7 @@ class UserController {
               favorite: false,
             })
           );
+          }
           await candidate.save();
         }
         return res.json({ message: "Card was created" });
@@ -210,6 +214,17 @@ class UserController {
       });
       return res.json(userData);
     } catch (e) {
+      next(e);
+    }
+  }
+
+  async getCommunityCards(req, res, next){
+    try {
+      const users = await UserService.getCommunityCards();
+      // users.map((i)=>console.log(i.cards))
+      return res.json(users)
+    } catch (e) {
+      console.log(e);
       next(e);
     }
   }

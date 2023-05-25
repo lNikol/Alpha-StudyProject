@@ -10,7 +10,7 @@ class CardController {
   }
   async update(req, res) {
     try {
-      const updatedCard = CardService.update(req.headers);
+      const updatedCard = await CardService.update(req.body);
       return res.json(updatedCard);
     } catch (e) {
       res.status(500).json(e);
@@ -19,7 +19,7 @@ class CardController {
 
   async deleteCardById(req, res) {
     try {
-      const card = await CardService.deleteCardById(req.headers.id);
+      const card = await CardService.deleteCardById(req.body.id);
       return res.json(card);
     } catch (e) {
       res.status(500).json(e);

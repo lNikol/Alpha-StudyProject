@@ -1,4 +1,4 @@
-const { connect } = require("./config");
+const { connect, client_url } = require("./config");
 
 const express = require("express");
 const upload = require("express-fileupload");
@@ -6,16 +6,26 @@ const mongoose = require("mongoose");
 
 const authRouter = require("./routers/authRouter");
 const userRouter = require("./routers/userRouter");
+
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const errorMiddleware = require("./middleware/errorMiddleware");
+
 const PORT = process.env.PORT || 5000;
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: client_url,
+  })
+);
 app.use(upload());
 app.use(express.json());
-
+app.use(cookieParser());
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
+app.use(errorMiddleware);
 
 const start = async () => {
   try {

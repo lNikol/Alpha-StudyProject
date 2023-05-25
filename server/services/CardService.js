@@ -16,8 +16,8 @@ class CardService {
     const card = await Card.findByIdAndDelete(id);
     return res.json(card);
   }
-  async create(card){
-    if(!card) throw new Error("card wasn't set");
+  async create(card) {
+    if (!card) throw new Error("Card wasn't set");
   }
 }
 export default new CardService();

@@ -8,7 +8,6 @@ module.exports = function (roles) {
     }
     try {
       const token = req?.headers?.authorization.split(" ")[1];
-
       const refreshToken = req.cookies.refreshToken;
       if (!token && !refreshToken) {
         next(ApiError.UnauthorizedError());
@@ -18,6 +17,7 @@ module.exports = function (roles) {
       if (!userData) userData = TokenService.validateRefreshToken(refreshToken);
       if (!userData) next(ApiError.UnauthorizedError());
 
+      req.user = userData;
       let { roles: userRoles } = userData;
       let hasRole = false;
       userRoles.forEach((role) => {

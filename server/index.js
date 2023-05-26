@@ -6,6 +6,8 @@ const mongoose = require("mongoose");
 
 const authRouter = require("./routers/authRouter");
 const userRouter = require("./routers/userRouter");
+const cardRouter = require("./routers/cardRouter");
+const fileRouter = require("./routers/fileRouter");
 
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -20,11 +22,15 @@ app.use(
     origin: client_url,
   })
 );
+
 app.use(upload());
 app.use(express.json());
 app.use(cookieParser());
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
+app.use("/card", cardRouter);
+app.use("/files", fileRouter);
+
 app.use(errorMiddleware);
 
 const start = async () => {

@@ -6,6 +6,8 @@ const bcrypt = require("bcryptjs");
 const ApiError = require("../exceptions/api-error");
 const jwt = require("jsonwebtoken");
 const { jwt_access_secret, jwt_refresh_secret } = require("../config");
+const FileService = require("./FileService");
+const File = require("../models/File");
 
 class UserService {
   async registration(username, password) {
@@ -19,13 +21,12 @@ class UserService {
       username,
       password: hashPassword,
       roles: userRole.value,
-      studySet: {},
     });
 
+    await FileService.createDir(new File({ user: user._id, name: "" }));
     const userDto = new UserDto(user);
     const tokens = TokenService.generateTokens({ ...userDto });
     await TokenService.saveToken(userDto.id, tokens.refreshToken);
-
     return { ...tokens, user: userDto };
   }
 
@@ -50,6 +51,12 @@ class UserService {
   async logout(refreshToken) {
     const token = await TokenService.removeToken(refreshToken);
     return token;
+  }
+
+  async deleteAccount(username) {
+    const user = await User.findOneAndRemove({ username });
+    if (!user) throw ApiError.BadRequest("User wasn't found");
+    return user;
   }
 
   validateAccessToken(token) {
@@ -86,9 +93,15 @@ class UserService {
     return { ...tokens, user: userDto };
   }
 
-  async getCommunityCards(){
+  async getCommunityCards() {
     const users = await User.find();
-    return(users)
+    let cards = [];
+    users.map((i) => {
+      if (i.cards.length > 0) {
+        cards.push({ user: i._id, cards: i.cards });
+      }
+    });
+    return cards;
   }
 }
 module.exports = new UserService();

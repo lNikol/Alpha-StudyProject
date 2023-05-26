@@ -3,15 +3,16 @@ const Router = require("express");
 const { check } = require("express-validator");
 const roleMiddleware = require("../middleware/roleMiddleware");
 const userController = require("../controllers/userController");
+const cardController = require("../controllers/cardController");
 
 const router = new Router();
 
 router.post(
   "/registration",
   check("username", "Name cannot be empty").notEmpty(),
-  check("password", "Password length from 4 to 10").isLength({
+  check("password", "Password length from 4 to 20").isLength({
     min: 4,
-    max: 10,
+    max: 20,
   }),
   userController.registration
 );
@@ -54,12 +55,22 @@ router.post(
   userController.sendExample
 );
 
+// router.post(
+//   "/searchCard",
+//   roleMiddleware(["USER", "ADMIN"]),
+//   userController.searchCard
+// );
+
 router.post(
-  "/searchCard",
+  "/communityCards",
   roleMiddleware(["USER", "ADMIN"]),
-  userController.searchCard
+  userController.getCommunityCards
 );
 
-router.post('/communityCards', roleMiddleware(["USER","ADMIN"]), userController.getCommunityCards)
+router.post(
+  "/cards",
+  roleMiddleware(["USER", "ADMIN"]),
+  cardController.getCards
+);
 
 module.exports = router;

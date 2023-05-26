@@ -6,7 +6,7 @@ const LoginForm = ({ isAuth, setUser }) => {
   const [password, setPassword] = useState("");
 
   return (
-    <div>
+    <div style={{ margin: "5px" }}>
       <input
         type="text"
         placeholder="Username"
@@ -43,7 +43,6 @@ const LoginForm = ({ isAuth, setUser }) => {
             })
             .catch((e) => {
               let msgForAlert = "";
-              console.log(e);
               if (e.response?.data?.errors.length >= 1) {
                 e.response.data.errors.forEach(
                   (i) => (msgForAlert += i.msg + "\n")

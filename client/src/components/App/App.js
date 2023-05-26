@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import AuthService from "../../services/AuthService";
 import userApi from "../../http";
 import User from "../User/User";
+import Writing from "../Writing/Writing";
 
 async function checkAuth(isAuth, user) {
   try {
@@ -21,7 +22,9 @@ async function checkAuth(isAuth, user) {
 
 function App() {
   let [user, setUser] = useState("");
+  let [cards, setCards] = useState([]);
   let [isAuth, setIsAuth] = useState(false);
+
   useEffect(() => {
     if (localStorage.getItem("token")) {
       checkAuth(setIsAuth, setUser);
@@ -41,6 +44,7 @@ function App() {
         Log out
       </button>
       <User {...user} />
+      {/* <Writing username={user.username} /> */}
     </div>
   );
 }

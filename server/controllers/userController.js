@@ -8,6 +8,8 @@ const bcrypt = require("bcryptjs");
 const UserService = require("../services/UserService");
 const { validationResult } = require("express-validator");
 const ApiError = require("../exceptions/api-error");
+const FileService = require("../services/FileService");
+const File = require("../models/File");
 
 class UserController {
   async registration(req, res, next) {
@@ -20,12 +22,16 @@ class UserController {
         });
       }
       const { username, password } = req.body;
+
       const userData = await UserService.registration(username, password);
       res.cookie("refreshToken", userData.refreshToken, {
         maxAge: 15 * 24 * 60 * 60 * 1000,
         httpOnly: true,
       });
 
+      await FileService.createDir(
+        new File({ user: userData.user.id, name: "" })
+      );
       return res.json(userData);
     } catch (e) {
       next(e);
@@ -149,7 +155,6 @@ class UserController {
     try {
       res.download(template_path);
     } catch (e) {
-      console.log(e);
       res.status(500).json(e);
     }
   }
@@ -203,7 +208,6 @@ class UserController {
     try {
       return await UserService.deleteAccount(req.user.username);
     } catch (e) {
-      console.log(e);
       next(e);
     }
   }
@@ -226,9 +230,9 @@ class UserController {
     try {
       return res.json(await UserService.getCommunityCards());
     } catch (e) {
-      console.log(e);
       next(e);
     }
   }
 }
+
 module.exports = new UserController();

@@ -23,7 +23,6 @@ class UserService {
       roles: userRole.value,
     });
 
-    await FileService.createDir(new File({ user: user._id, name: "" }));
     const userDto = new UserDto(user);
     const tokens = TokenService.generateTokens({ ...userDto });
     await TokenService.saveToken(userDto.id, tokens.refreshToken);

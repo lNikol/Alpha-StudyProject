@@ -8,6 +8,7 @@ const authRouter = require("./routers/authRouter");
 const userRouter = require("./routers/userRouter");
 const cardRouter = require("./routers/cardRouter");
 const fileRouter = require("./routers/fileRouter");
+const studySetRouter = require("./routers/studySetRouter");
 
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -30,6 +31,7 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/card", cardRouter);
 app.use("/files", fileRouter);
+app.use("/studyset", studySetRouter);
 
 app.use(errorMiddleware);
 

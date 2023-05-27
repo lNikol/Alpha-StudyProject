@@ -14,9 +14,10 @@ const User = new Schema({
       message: (props) => `${props.path} exceeds the limit of 1000`,
     },
   },
-
-  studySet: { type: Object, default: {}, ref: "StudySet" },
+  studySets: { type: [Object], default: [], required: true, ref: "StudySet" },
   roles: [{ type: String, ref: "Role" }],
+  diskSpace: { type: Number, default: 1024 ** 2 * 100 }, // ~ 104 mb
+  usedSpace: { type: Number, default: 0 },
 });
 
 module.exports = model("User", User);

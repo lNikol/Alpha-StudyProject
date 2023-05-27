@@ -5,10 +5,10 @@ class CardController {
   async create(req, res, next) {
     try {
     } catch (e) {
-      console.log(e);
       next(e);
     }
   }
+
   // async update(req, res, next) {
   //   try {
   //     const updatedCard = await CardService.update(req.body);
@@ -35,16 +35,14 @@ class CardController {
       await CardService.replaceFavorite(req.user.username, cardname, favorite);
       res.json(`Favorite for ${cardname} was changed`);
     } catch (e) {
-      console.log(e);
       next(e);
     }
   }
 
   async getCards(req, res, next) {
     try {
-      return await res.json(await CardService.getCards(req.user.username));
+      return res.json(await CardService.getCards(req.user.username));
     } catch (e) {
-      console.log(e);
       next(e);
     }
   }
@@ -58,7 +56,6 @@ class CardController {
       await CardService.replaceCardsState(req.user.username, cardsForChange);
       return res.json({ message: "Card state was changed" });
     } catch (e) {
-      console.log(e);
       next(e);
     }
   }

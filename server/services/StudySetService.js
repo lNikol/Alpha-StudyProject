@@ -30,6 +30,10 @@ class StudySetService {
     if (names.includes(name)) return user.studySets[names.indexOf(name)].cards;
     else throw ApiError.BadRequest("Studyset wasn't found");
   }
+  async getStudySets(username) {
+    const user = await User.findOne({ username });
+    return user.studySets;
+  }
 }
 
 module.exports = new StudySetService();

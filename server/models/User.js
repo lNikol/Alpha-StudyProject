@@ -16,6 +16,7 @@ const User = new Schema({
   },
   studySets: { type: [Object], default: [], required: true, ref: "StudySet" },
   roles: [{ type: String, ref: "Role" }],
+  files: { type: [Object], ref: "File" },
   diskSpace: { type: Number, default: 1024 ** 2 * 100 }, // ~ 104 mb
   usedSpace: { type: Number, default: 0 },
 });

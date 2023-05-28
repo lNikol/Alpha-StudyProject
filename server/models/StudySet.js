@@ -8,7 +8,7 @@ const StudySet = new Schema({
     maxLength: 16,
   },
   files: { type: [Object], default: [], ref: "File" },
-  public: { type: Boolean, default: true, required: true },
+  public: { type: Boolean, default: true },
   cards: {
     type: [Object],
     default: [],
@@ -21,8 +21,14 @@ const StudySet = new Schema({
     },
   },
   parentFolder: { type: String, default: "" },
-  color: { type: String, unique: false, required: true, default: "Gray" },
-  topic: { type: String, unique: true, required: true, maxLength: 48 },
+  color: { type: String, unique: false, required: false, default: "Gray" },
+  topic: {
+    type: String,
+    unique: false,
+    required: true,
+    maxLength: 48,
+    default: "all",
+  },
   //   subsets: [{ ref: "Subset" }],
 });
 

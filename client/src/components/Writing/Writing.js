@@ -1,32 +1,58 @@
 import { useEffect, useState } from "react";
-import userApi from "../../http";
 import UnsuccessList from "./UnsuccessList";
 
-export default function Writing(username) {
-  let [start, setStart] = useState(false);
+export default function Writing({ cards, start }) {
+  // let [start, setStart] = useState(false);
   let [show, setShow] = useState(false);
-  let [wrCards, setWrCards] = useState([]); // [{original: original, translate:translate}]
+  let [wrCards, setWrCards] = useState(cards); // [{original: original, translate:translate}]
   let [unsuccessCards, setUnsuccessCards] = useState([]);
-  useEffect(() => {
-    userApi
-      .post("/cards", username)
-      .then((res) => setWrCards(res.data))
-      .catch((e) => console.log(e.message));
-  }, []);
   if (show)
     return <UnsuccessList unsuccess={unsuccessCards} setShow={setShow} />;
+  const startWriting = (languages) => {
+    let allWords = [];
+    const typeArr = wrCards.map((i) => ({
+      original: i.name,
+      translate: i.descriptions,
+    }));
 
+    const lang1 = typeArr.map(({ original, translate }) => ({
+      original,
+      translate,
+    }));
+    if (languages) {
+      const lang2 = typeArr.map(({ original, translate }) => ({
+        original: translate.toString(),
+        translate: original,
+      }));
+
+      console.log(lang1);
+      console.log(lang2);
+      console.log(typeArr);
+    }
+  };
   return (
     <>
+      <form>
+        <input id="languages" type="checkbox" />
+        <label htmlFor="languages">Two languages?</label>
+      </form>
+
       {wrCards.map((c) => (
-        <p key={c.name}>
+        <p key={c.name + "-"}>
           {c.name}
           {"  "}
-          {c.descriptions.map((d) => (
-            <b key="d">{d}</b>
+          {c.descriptions.map((d, index) => (
+            <b key={"d" + index + "-"}>{d}</b>
           ))}
         </p>
       ))}
+      <button
+        onClick={() => {
+          let languages = document.getElementById("languages").checked;
+          startWriting(languages);
+        }}>
+        Start
+      </button>
     </>
   );
 }

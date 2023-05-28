@@ -1,10 +1,14 @@
 import "./App.css";
 import LoginForm from "../LoginForm/LoginForm";
 import { useEffect, useState } from "react";
-import AuthService from "../../services/AuthService";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import userApi from "../../http";
-import User from "../User/User";
 import Writing from "../Writing/Writing";
+import Menu from "../Menu/Menu";
+import HomePage from "../HomePage/HomePage";
+import UserProfile from "../UserProfile/UserProfile";
+import Community from "../Community/Community";
+import Library from "../Library/Library";
 
 async function checkAuth(isAuth, user) {
   try {
@@ -22,7 +26,6 @@ async function checkAuth(isAuth, user) {
 
 function App() {
   let [user, setUser] = useState("");
-  let [cards, setCards] = useState([]);
   let [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
@@ -34,16 +37,25 @@ function App() {
 
   return (
     <div className="App">
-      <h2>{isAuth ? "Вы авторизованы" : "Авторизуйтесь"}</h2>
-      <button
-        onClick={async () => {
-          await AuthService.logout();
-          setIsAuth(false);
-          localStorage.setItem("token", "");
-        }}>
-        Log out
-      </button>
-      <User {...user} />
+      <Router>
+        <Menu />
+        <Routes>
+          <Route
+            exact
+            path="/"
+            element={<HomePage username={user.username} />}></Route>
+          <Route
+            exact
+            path="/library"
+            element={<Library user={user} />}></Route>
+          <Route
+            exact
+            path="/profile"
+            element={<UserProfile user={user} setIsAuth={setIsAuth} />}></Route>
+          <Route exact path="/community" element={<Community />}></Route>
+        </Routes>
+      </Router>
+
       {/* <Writing username={user.username} /> */}
     </div>
   );

@@ -6,8 +6,6 @@ const bcrypt = require("bcryptjs");
 const ApiError = require("../exceptions/api-error");
 const jwt = require("jsonwebtoken");
 const { jwt_access_secret, jwt_refresh_secret } = require("../config");
-const FileService = require("./FileService");
-const File = require("../models/File");
 
 class UserService {
   async registration(username, password) {
@@ -58,6 +56,25 @@ class UserService {
     return user;
   }
 
+  async changePassword(username, password, newpassword) {
+    const user = await User.findOne({ username });
+    if (!user) throw ApiError.BadRequest("User wasn't found");
+    const oldPassword = user.password;
+    const hashPassword = bcrypt.hashSync(newpassword, 7);
+    if (bcrypt.compareSync(password, oldPassword)) user.password = hashPassword;
+    else throw ApiError.BadRequest("Invalid password");
+    await user.save();
+    return user;
+  }
+
+  async changeName(username, newName) {
+    const user = await User.findOne({ username });
+    if (!user) throw ApiError.BadRequest("User wasn't found");
+    user.username = newName;
+    await user.save();
+    return user;
+  }
+
   validateAccessToken(token) {
     try {
       const userData = jwt.verify(token, jwt_access_secret);
@@ -97,7 +114,7 @@ class UserService {
     let cards = [];
     users.map((i) => {
       if (i.cards.length > 0) {
-        cards.push({ user: i._id, cards: i.cards });
+        cards.push({ cards: i.cards });
       }
     });
     return cards;

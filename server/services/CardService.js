@@ -42,12 +42,10 @@ class CardService {
 
   async replaceFavorite(username, cardname, favorite) {
     const candidate = await User.findOne({ username });
-    let copy = candidate.cards;
-    copy.map((i) => {
+    candidate.cards.map((i) => {
       if (i.name == cardname) i.favorite = favorite;
     });
-    candidate.cards = [];
-    candidate.cards = copy;
+    candidate.markModified("cards");
     await candidate.save();
   }
 

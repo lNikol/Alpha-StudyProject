@@ -30,4 +30,10 @@ router.put(
   studySetController.changeName
 );
 
+router.get(
+  "/studysets",
+  roleMiddleware(["USER", "ADMIN"]),
+  studySetController.getStudySets
+);
+
 module.exports = router;

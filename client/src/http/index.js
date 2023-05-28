@@ -17,7 +17,7 @@ userApi.interceptors.response.use(
   },
   async (err) => {
     const originalRequest = err.config;
-    if (err.response.status == 401 && err.config && !err.config._isRetry) {
+    if (err?.response?.status == 401 && err.config && !err.config._isRetry) {
       originalRequest._isRetry = true;
       try {
         const response = await userApi.get(`/refresh`, {});
@@ -26,7 +26,8 @@ userApi.interceptors.response.use(
       } catch (e) {
         alert("User is not logged in");
       }
-    } else throw err;
+    } else if (err.code === "ECONNABORTED") console.clear();
+    else throw err;
   }
 );
 

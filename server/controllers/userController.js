@@ -4,7 +4,6 @@ const deleteUserFile = require("../helpers/deleteUserFile");
 const { template_path } = require("../config");
 const User = require("../models/User");
 const Card = require("../models/Card");
-const bcrypt = require("bcryptjs");
 const UserService = require("../services/UserService");
 const { validationResult } = require("express-validator");
 const ApiError = require("../exceptions/api-error");
@@ -41,9 +40,12 @@ class UserController {
   async createCard(req, res, next) {
     try {
       let { cardname, descriptions, tags } = JSON.parse(req.body.user);
+      let { studySet } = req.body;
       let username = req.user.username;
       const candidate = await User.findOne({ username });
-      let userCardsNames = candidate.cards.map((i) => i?.name);
+      let setsNames = candidate.studySets.map((i) => i.name);
+      let set = candidate.studySets[setsNames.indexOf(studySet)];
+      let userCardsNames = set.cards.map((i) => i?.name);
       let cardExists = false;
 
       let userFile = "";
@@ -63,25 +65,29 @@ class UserController {
           .then(async (cards) => {
             if (cards) {
               let existsCards = [];
-              let startLength = candidate.cards.length;
+              let startLength = set.cards.length;
               cards.map((i) => {
                 cardExists = userCardsNames.includes(i.name) ? true : false;
                 if (cardExists) {
                   existsCards.push(i.name);
                 } else {
-                  candidate.cards.push(
+                  set.cards.push(
                     new Card({
                       name: i.name,
                       descriptions: i.descriptions,
                       tags: i.tags ? i.tags : [],
                       date: new Date().getTime(),
+                      user: candidate.username,
+                      favorite: false,
                     })
                   );
-                  userCardsNames = candidate.cards.map((i) => i.name);
+                  userCardsNames = set.cards.map((i) => i.name);
                 }
               });
-
-              if (startLength != candidate.cards.length) await candidate.save();
+              if (startLength != set.cards.length) {
+                candidate.markModified("studySets");
+                await candidate.save();
+              }
 
               if (existsCards.length > 0) {
                 res.status(500).json({
@@ -117,7 +123,7 @@ class UserController {
                 descriptions: descriptions,
                 tags: tags ? tags : [],
                 date: new Date().getTime(),
-                user: candidate._id,
+                user: candidate.username,
                 favorite: false,
               })
             );
@@ -134,19 +140,26 @@ class UserController {
 
   async changePassword(req, res, next) {
     try {
-      let { newpassword, password } = req.body;
-      if (!newpassword) throw ApiError.BadRequest("New password wasn't set");
-      const username = req.user.username;
-      const candidate = await User.findOne({ username });
-      const oldPassword = candidate.password;
-      const hashPassword = bcrypt.hashSync(newpassword, 7);
-      if (bcrypt.compareSync(password, oldPassword))
-        candidate.password = hashPassword;
-      else throw ApiError.BadRequest("Invalid password");
-      await candidate.save();
-      return res.json("Password was changed");
+      let { newPassword, oldPassword: password } = req.body;
+      if (!newPassword) throw ApiError.BadRequest("newPassword wasn't set");
+      const user = await UserService.changePassword(
+        req.user.username,
+        password,
+        newPassword
+      );
+
+      return res.json({ message: "Password was changed" });
     } catch (e) {
-      console.log(e);
+      next(e);
+    }
+  }
+
+  async changeName(req, res, next) {
+    try {
+      let { newName } = req.body;
+      if (!newName) throw ApiError.BadRequest("New name wasn't set");
+      await UserService.changeName(req.user.username, newName);
+    } catch (e) {
       next(e);
     }
   }

@@ -59,5 +59,12 @@ class StudySetController {
       next(e);
     }
   }
+  async getStudySets(req, res, next) {
+    try {
+      return res.json(await StudySetService.getStudySets(req.user.username));
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 module.exports = new StudySetController();

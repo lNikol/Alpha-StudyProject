@@ -31,7 +31,7 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/card", cardRouter);
 app.use("/files", fileRouter);
-app.use("/studyset", studySetRouter);
+app.use("/user/studyset", studySetRouter);
 
 app.use(errorMiddleware);
 

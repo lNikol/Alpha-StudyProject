@@ -31,6 +31,12 @@ router.put(
   userController.changePassword
 );
 
+router.put(
+  "/changeName",
+  roleMiddleware(["USER", "ADMIN"]),
+  userController.changeName
+);
+
 router.post(
   "/createCard",
   roleMiddleware(["USER", "ADMIN"]),

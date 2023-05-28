@@ -80,6 +80,7 @@ class FileController {
       });
 
       await dbFile.save();
+      user.files.push(dbFile._id);
       await user.save();
       res.json(dbFile);
     } catch (e) {

@@ -1,53 +1,75 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import UnsuccessList from "../Writing/UnsuccessList";
 
-export default function Quiz({ tags, cards }) {
-  const handleStartQuiz = () => {};
+export default function Quiz({ cards, max }) {
+  const [quizArr, setQuizArr] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [inputValue, setInputValue] = useState("");
+  const [show, setShow] = useState(false);
+  const [unsuccessCards, setUnsuccessCards] = useState([]);
+
+  useEffect(() => {
+    let tArr = new Array(max);
+    const typeArr = cards.map((i) => ({
+      original: i.name,
+      translate: i.descriptions,
+    }));
+
+    const lang1 = typeArr.map(({ original, translate }) => ({
+      original: original,
+      translate: translate,
+    }));
+
+    for (let i = 0; i < max; i++) tArr[i] = lang1[i];
+
+    setQuizArr(tArr);
+  }, []);
+
+  const checkUserAnswer = () => {
+    if (quizArr[currentIndex].translate.length >= 2) {
+      if (quizArr[currentIndex].translate.includes(inputValue))
+        console.log("good answer");
+      else
+        setUnsuccessCards([
+          ...unsuccessCards,
+          { ...quizArr[currentIndex], answer: inputValue },
+        ]);
+    } else {
+      if (quizArr[currentIndex].translate.toString() != inputValue)
+        setUnsuccessCards([
+          ...unsuccessCards,
+          { ...quizArr[currentIndex], answer: inputValue },
+        ]);
+    }
+  };
+
+  const handleNext = () => {
+    checkUserAnswer();
+    setCurrentIndex(currentIndex + 1);
+    setInputValue("");
+    if (currentIndex === quizArr.length - 1) setShow(true);
+  };
+
+  if (show)
+    return <UnsuccessList unsuccessCards={unsuccessCards} setShow={setShow} />;
 
   return (
-    <div>
+    quizArr[currentIndex] && (
       <div>
-        <div style={{ display: "inline-block", fontSize: "20px" }}>
-          <label htmlFor="numOfCards">Number of cards:</label>
-          <input
-            style={{ marginLeft: "10px" }}
-            type="text"
-            id="numOfCards"
-            value=""
-          />
-        </div>
-        <div
-          style={{
-            display: "inline-block",
-            marginLeft: "10px",
-            fontSize: "20px",
+        <p>{quizArr[currentIndex].original}</p>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+        />
+        <button
+          onClick={() => {
+            if (inputValue.trim() == "") alert("Please, write an answer");
+            else handleNext();
           }}>
-          /<b>{cards.length}</b>
-        </div>
+          Next
+        </button>
       </div>
-      <div>
-        <label htmlFor="tags">Tags:</label>
-        <select id="tags">
-          <option value="all">All</option>
-          <option value="noTag">No Tag</option>
-          {tags.map((tag) => (
-            <option key={tag} value={tag}>
-              {tag}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label htmlFor="rating">Rating:</label>
-        <select id="rating">
-          <option value="bad">Bad</option>
-          <option value="normal">Normal</option>
-          <option value="good">Good</option>
-          <option value="unrated">Unrated</option>
-        </select>
-      </div>
-
-      <button onClick={handleStartQuiz}>Start Quiz</button>
-    </div>
+    )
   );
 }

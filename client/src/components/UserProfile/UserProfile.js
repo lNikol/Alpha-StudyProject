@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import userApi from "../../http";
 import AuthService from "../../services/AuthService";
 import "./UserProfile.css";
+
 const UserProfile = ({ user, setIsAuth }) => {
   let [user_, setUser_] = useState({
     username: user.username || "",
@@ -14,7 +15,9 @@ const UserProfile = ({ user, setIsAuth }) => {
   const handleEnterPress = (e) => {
     if (e.key === "Enter") {
       if (e.target.className === "UserName") {
-        userApi.put("/changeName", { newName: user_.username });
+        userApi
+          .put("/changeName", { newName: user_.username })
+          .then((res) => alert(res.data.message));
         userApi
           .get("/refresh", {})
           .then((res) => {
@@ -71,7 +74,7 @@ const UserProfile = ({ user, setIsAuth }) => {
         />
       </div>
       <div>
-        <button onClick={() => setShowChangePassword(true)}>
+        <button onClick={() => setShowChangePassword(!showChangePassword)}>
           Change password
         </button>
         <button onClick={handleDeleteAccountClick}>Delete Account</button>

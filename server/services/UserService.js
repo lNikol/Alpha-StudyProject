@@ -113,10 +113,14 @@ class UserService {
     const users = await User.find();
     let cards = [];
     users.map((i) => {
-      if (i.cards.length > 0) {
-        cards.push({ cards: i.cards });
-      }
+      if (i.studySets.length >= 1) {
+        i.studySets.map((s) => {
+          if (s.cards.length >= 1)
+            cards.push({ studyName: s.name, cards: s.cards });
+        });
+      } else if (i.studySets.length == 0) "";
     });
+
     return cards;
   }
 }

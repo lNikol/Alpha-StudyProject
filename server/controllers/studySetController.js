@@ -9,11 +9,10 @@ class StudySetController {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
-          message: "Error during creating set",
-          errors: errors.errors,
+          message: errors.errors[0].msg,
         });
       }
-      //req.body - {studysetName:studysetName, type:"folder", parent:""}
+      //req.body - {studysetName:studysetName, type:"dir", parent:""}
       if (!req.body.studysetName)
         throw ApiError.BadRequest("studysetName wasn't set");
 

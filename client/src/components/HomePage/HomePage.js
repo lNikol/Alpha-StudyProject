@@ -9,7 +9,7 @@ export default function HomePage({ username }) {
   useEffect(() => {
     let day = new Date().getDay();
     if (day === 0) day = daysOfWeek.length - 1;
-    setCurrentDay(daysOfWeek[day]);
+    setCurrentDay(daysOfWeek[day - 1]);
   }, []);
 
   return (
@@ -32,7 +32,6 @@ export default function HomePage({ username }) {
               margin: "0 10px",
               textAlign: "center",
               lineHeight: "45px",
-              cursor: "pointer",
               backgroundColor: currentDay === day ? "#fff" : "transparent",
             }}>
             {day}

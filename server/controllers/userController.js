@@ -142,7 +142,7 @@ class UserController {
     try {
       let { newPassword, oldPassword: password } = req.body;
       if (!newPassword) throw ApiError.BadRequest("newPassword wasn't set");
-      const user = await UserService.changePassword(
+      await UserService.changePassword(
         req.user.username,
         password,
         newPassword
@@ -159,6 +159,7 @@ class UserController {
       let { newName } = req.body;
       if (!newName) throw ApiError.BadRequest("New name wasn't set");
       await UserService.changeName(req.user.username, newName);
+      res.json({ message: "Name was changed" });
     } catch (e) {
       next(e);
     }

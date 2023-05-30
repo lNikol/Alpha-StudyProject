@@ -4,6 +4,8 @@ const User = require("../models/User");
 
 class StudySetService {
   async createSet(folder, username, name) {
+    if (folder === undefined)
+      throw ApiError.BadRequest("Studyset with this name exists");
     const user = await User.findOne({ username });
     user.studySets.push(
       new StudySet({ name: name, parentFolder: folder.path, topic: name })
@@ -30,6 +32,7 @@ class StudySetService {
     if (names.includes(name)) return user.studySets[names.indexOf(name)].cards;
     else throw ApiError.BadRequest("Studyset wasn't found");
   }
+
   async getStudySets(username) {
     const user = await User.findOne({ username });
     return user.studySets;

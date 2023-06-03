@@ -36,19 +36,22 @@ class CardService {
       throw ApiError.BadRequest("Card wasn't found");
   }
 
-  async create(card) {
-    if (!card) throw new Error("Card wasn't set");
-  }
 
-  async replaceFavorite(username, cardname, favorite) {
+  async replaceFavorite(username, cardname, favorite, studyset) {
     const candidate = await User.findOne({ username });
-    candidate.cards.map((i) => {
-      if (i.name == cardname) i.favorite = favorite;
-    });
-    candidate.markModified("cards");
+    candidate.studySets.map((i)=>{
+      if(i.name==studyset){
+        i.cards.map((c) => {
+          if (c.name == cardname)  { c.favorite = favorite; }
+        });
+      }
+    })
+    
+    candidate.markModified("studySets");
     await candidate.save();
   }
 
+  // for delete
   async getCards(username) {
     let user = await User.findOne({ username });
     return user.cards;

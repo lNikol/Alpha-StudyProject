@@ -1,0 +1,7 @@
+#lis {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+#lis::-webkit-scrollbar {
+  display: none;
+}

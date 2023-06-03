@@ -1,34 +1,33 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function UnsuccessList({ unsuccessCards, setShow }) {
   const navigate = useNavigate();
   const goBack = () => {
     setShow(false);
-    navigate("/");
+    navigate("/library");
   };
   return unsuccessCards?.length >= 1 ? (
     <div>
       {unsuccessCards.map((i, index) => (
-        <div
-          key={index + "]"}
-          style={{ display: "inline-block", margin: "5px", minWidth: "150px" }}>
-          <b className="original" style={{ color: "green" }}>
+        <ul key={i + index} className="list-group list-group-horizontal-sm">
+          <li className="list-group-item list-group-item-success">
             {i.original}
-          </b>{" "}
-          -{" "}
-          <i className="translate" style={{ color: "gray" }}>
-            {i.translate}
-          </i>{" "}
-          - <u style={{ color: "red" }}>{i?.answer}</u>
-        </div>
+          </li>
+          <li className="list-group-item list-group-item-primary">
+            {i.translate.toString().split(",").join("/")}
+          </li>
+          <li className="list-group-item list-group-item-danger">
+            {i?.answer}
+          </li>
+        </ul>
       ))}
       <p></p>
-      <button onClick={goBack}>Go back to the home page</button>
+      <button onClick={goBack}>Go back to the library</button>
     </div>
   ) : (
     <>
       <p>Congratulations! You didn't make any mistakes</p>
-      <button onClick={goBack}>Go back to the home page</button>
+      <button onClick={goBack}>Go back to the library</button>
     </>
   );
 }

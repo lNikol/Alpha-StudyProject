@@ -2,17 +2,19 @@ import { useEffect, useState } from "react";
 import userApi from "../../http";
 import StudySetGrid from "../StudySet/StudySetGrid";
 
-export default function Library(user) {
-  let [studySets, setStudySets] = useState([]);
+export default function Library({ studySets_, setstudySets_, user }) {
+  let [studySets, setStudySets] = useState(studySets_);
   useEffect(() => {
     userApi
       .get("/studyset/studysets")
       .then((res) => {
-        if (res) setStudySets(res.data);
+        if (res) {
+          setStudySets(res.data);
+          setstudySets_(res.data);
+        }
       })
       .catch((e) => console.log(e));
-  });
-
+  }, []);
   const getExample = () => {
     userApi
       .post("/sendExample", "", { responseType: "blob" })
@@ -29,11 +31,36 @@ export default function Library(user) {
   };
 
   return (
-    <>
-      <button onClick={getExample}>Get example</button>
-      <h2>Your sets </h2>
-
-      <StudySetGrid studySets={studySets} user={user} />
-    </>
+    <div className="container-fluid">
+      <div
+        style={{
+          display: "flex",
+        }}>
+        <div className="col-sm-4">
+          <h3>Create Your Own Set</h3>
+          <button className="btn btn-primary" onClick={getExample}>
+            Get Example
+          </button>
+          <h2>Your sets </h2>
+          <StudySetGrid
+            studySets={studySets}
+            setter={setStudySets}
+            user={user}
+          />
+        </div>
+        <div className="col-sm-8">
+          <h1>StudySet</h1>
+          <nav
+            className="navbar navbar-expand-lg navbar-light bg-light"
+            style={{ textAlign: "center" }}>
+            <ul className="navbar-nav">
+              <li className="nav-item nav-link">Flashcards</li>
+              <li className="nav-item nav-link">Files</li>
+              <li className="nav-item nav-link">Notes</li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
   );
 }

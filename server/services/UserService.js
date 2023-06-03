@@ -6,6 +6,8 @@ const bcrypt = require("bcryptjs");
 const ApiError = require("../exceptions/api-error");
 const jwt = require("jsonwebtoken");
 const { jwt_access_secret, jwt_refresh_secret } = require("../config");
+const File = require("../models/File");
+const FileService = require("./FileService");
 
 class UserService {
   async registration(username, password) {
@@ -51,14 +53,19 @@ class UserService {
   }
 
   async deleteAccount(username) {
-    const user = await User.findOneAndRemove({ username });
+    const user = await User.findOne({ username });
     if (!user) throw ApiError.BadRequest("User wasn't found");
+    await File.find({ user: user._id }).deleteMany();
+    FileService.deleteDir(user._id);
+    await user.deleteOne();
     return user;
   }
 
   async changePassword(username, password, newpassword) {
     const user = await User.findOne({ username });
     if (!user) throw ApiError.BadRequest("User wasn't found");
+    if (password === newpassword)
+      throw ApiError.BadRequest("The new password cannot match the old one");
     const oldPassword = user.password;
     const hashPassword = bcrypt.hashSync(newpassword, 7);
     if (bcrypt.compareSync(password, oldPassword)) user.password = hashPassword;
@@ -69,6 +76,9 @@ class UserService {
 
   async changeName(username, newName) {
     const user = await User.findOne({ username });
+    const candidates = await User.find({ username: newName });
+    if (candidates.length >= 1)
+      throw ApiError.BadRequest("User with this name exists");
     if (!user) throw ApiError.BadRequest("User wasn't found");
     user.username = newName;
     await user.save();
@@ -122,6 +132,10 @@ class UserService {
     });
 
     return cards;
+  }
+
+  async getUserById(userId) {
+    return User.find({ _id: userId });
   }
 }
 module.exports = new UserService();

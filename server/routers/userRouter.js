@@ -40,6 +40,10 @@ router.put(
 router.post(
   "/createCard",
   roleMiddleware(["USER", "ADMIN"]),
+  check("cardname", "cardname length from 1 to 64").isLength({
+    min: 1,
+    max: 64,
+  }),
   userController.createCard
 );
 
@@ -53,6 +57,11 @@ router.get(
   "/refresh",
   roleMiddleware(["USER", "ADMIN"]),
   userController.refresh
+);
+router.post(
+  "/userById",
+  roleMiddleware(["USER", "ADMIN"]),
+  userController.getUserById
 );
 
 router.post(

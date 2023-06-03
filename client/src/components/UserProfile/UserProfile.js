@@ -4,10 +4,7 @@ import AuthService from "../../services/AuthService";
 import "./UserProfile.css";
 
 const UserProfile = ({ user, setIsAuth }) => {
-  let [user_, setUser_] = useState({
-    username: user.username || "",
-    password: "",
-  });
+  let [user_, setUser_] = useState(user || "");
   const [newPassword, setNewPassword] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -16,13 +13,17 @@ const UserProfile = ({ user, setIsAuth }) => {
     if (e.key === "Enter") {
       if (e.target.className === "UserName") {
         userApi
-          .put("/changeName", { newName: user_.username })
-          .then((res) => alert(res.data.message));
-        userApi
-          .get("/refresh", {})
-          .then((res) => {
-            localStorage.setItem("token", res.data.accessToken);
-            if (res.data.user.username) setUser_(res.data.user.username);
+          .put("/changeName", { newName: user_ })
+          .then(() => {
+            userApi
+              .get("/refresh", {})
+              .then((res) => {
+                localStorage.setItem("token", res.data.accessToken);
+                if (res.data.user.username) setUser_(res.data.user.username);
+                alert("Name was changed");
+                // document.location = "/profile";
+              })
+              .catch((e) => alert(e?.response?.data?.message));
           })
           .catch((e) => alert(e?.response?.data?.message));
       } else if (e.target.className === "newPassword") {
@@ -45,13 +46,13 @@ const UserProfile = ({ user, setIsAuth }) => {
   const handleDeleteAccountClick = () => {
     userApi
       .delete("/deleteAccount")
+      .then(() => (document.location = "/"))
       .catch((e) => console.log(e.response.data.message));
-    document.location = "/";
   };
 
   return (
     <div>
-      <h2>Welcome, {user.username}</h2>
+      <h2>Welcome, {user}</h2>
 
       <button
         onClick={async () => {
@@ -67,9 +68,9 @@ const UserProfile = ({ user, setIsAuth }) => {
         <input
           type="text"
           id="username"
-          value={user_.username || ""}
+          value={user_ || ""}
           className="UserName"
-          onChange={(e) => setUser_({ ...user_, username: e.target.value })}
+          onChange={(e) => setUser_(e.target.value)}
           onKeyDown={handleEnterPress}
         />
       </div>

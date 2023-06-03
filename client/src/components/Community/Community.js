@@ -1,32 +1,39 @@
 import { useEffect, useState } from "react";
 import userApi from "../../http";
+import CommunityBlock from "./CommunityBlock";
 
 export default function Community() {
-  let [cards, setCards] = useState([]);
+  let [sets, setSets] = useState([]);
   useEffect(() => {
     userApi.post("/communityCards").then((res) => {
-      setCards(res.data);
+      setSets(res.data);
     });
   }, []);
+
   return (
-    <div style={{ margin: "5px" }}>
-      {cards.map((i) =>
+    <div className="card-body">
+      {sets.map((i) =>
         i.cards.map((c, index) => (
-          <div key={index + ","}>
-            {index == 0 ? (
-              <div>
-                {i.cards[index]?.user}: <b>{i.studyName}</b>
-              </div>
-            ) : (
-              ""
-            )}
-            <p>
-              {c.name} <b>{c.descriptions.toString().split(",").join("/")}</b>{" "}
-              <i>{c.tags.toString().split(",").join("/")}</i>
-            </p>
+          <div key={index + "op"}>
+            <CommunityBlock index={index} set={i} item={c} />
           </div>
         ))
       )}
     </div>
   );
 }
+
+<div className="container">
+  <div className="card my-4">
+    <div className="card-header bg-dark text-white">
+      <h2>Заголовок блока</h2>
+    </div>
+    <div className="card-body">
+      <ul className="list-group">
+        <li className="list-group-item">Элемент списка 1</li>
+        <li className="list-group-item">Элемент списка 2</li>
+        <li className="list-group-item">Элемент списка 3</li>
+      </ul>
+    </div>
+  </div>
+</div>;

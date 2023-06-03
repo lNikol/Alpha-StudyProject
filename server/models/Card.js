@@ -1,7 +1,7 @@
-const { Schema, model, ObjectId } = require("mongoose");
+const { Schema, model } = require("mongoose");
 
 const Card = new Schema({
-  name: { type: String, unique: true, required: true, maxLength: 128 },
+  name: { type: String, unique: true, required: true, maxLength: 64 },
   descriptions: {
     type: [String],
     unique: false,

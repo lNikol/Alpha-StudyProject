@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
-app.use("/card", cardRouter);
+app.use("/user/card", cardRouter);
 app.use("/files", fileRouter);
 app.use("/user/studyset", studySetRouter);
 

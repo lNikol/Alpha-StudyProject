@@ -2,23 +2,6 @@ const ApiError = require("../exceptions/api-error");
 const CardService = require("../services/CardService");
 
 class CardController {
-  async create(req, res, next) {
-    try {
-    } catch (e) {
-      next(e);
-    }
-  }
-
-  // async update(req, res, next) {
-  //   try {
-  //     const updatedCard = await CardService.update(req.body);
-  //     return res.json(updatedCard);
-  //   } catch (e) {
-  //     console.log(e);
-  //     next(e);
-  //   }
-  // }
-
   async deleteCardById(req, res, next) {
     try {
       await CardService.deleteCardById(req.body);
@@ -30,9 +13,14 @@ class CardController {
 
   async replaceFavorite(req, res, next) {
     try {
-      const { cardname, favorite } = req.body;
+      const { cardname, favorite, studyset } = req.body;
       if (!cardname) throw ApiError.BadRequest("Cardname wasn't set");
-      await CardService.replaceFavorite(req.user.username, cardname, favorite);
+      await CardService.replaceFavorite(
+        req.user.username,
+        cardname,
+        favorite,
+        studyset
+      );
       res.json(`Favorite for ${cardname} was changed`);
     } catch (e) {
       next(e);

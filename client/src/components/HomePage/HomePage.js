@@ -31,7 +31,7 @@ export default function HomePage({ username }) {
               border: "3px dotted #fff",
               margin: "0 10px",
               textAlign: "center",
-              lineHeight: "45px",
+              lineHeight: "35px",
               backgroundColor: currentDay === day ? "#fff" : "transparent",
             }}>
             {day}

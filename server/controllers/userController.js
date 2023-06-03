@@ -1,6 +1,4 @@
 const excelReader = require("../helpers/excelReader");
-const saveUserFile = require("../helpers/saveUserFile");
-const deleteUserFile = require("../helpers/deleteUserFile");
 const { template_path } = require("../config");
 const User = require("../models/User");
 const Card = require("../models/Card");
@@ -37,10 +35,21 @@ class UserController {
     }
   }
 
-  async createCard(req, res, next) {
+  async createCard(req, res) {
     try {
-      let { cardname, descriptions, tags } = JSON.parse(req.body.user);
-      let { studySet } = req.body;
+      let { cardname, descriptions, tags, studySet } = req.body;
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: "Error during creating card",
+          errors: errors.errors,
+        });
+      }
+
+      if (tags) tags = tags.split(";").filter((i) => i != "");
+      if (descriptions)
+        descriptions = descriptions.split(";").filter((i) => i != "");
+
       let username = req.user.username;
       const candidate = await User.findOne({ username });
       let setsNames = candidate.studySets.map((i) => i.name);
@@ -57,7 +66,7 @@ class UserController {
             .status(401)
             .json({ message: "File extension isn't .xlsx" });
 
-        let [rootPath, userFilePath] = await saveUserFile(
+        let [rootPath, userFilePath] = await FileService.saveUserFile(
           userFile,
           candidate._id
         );
@@ -71,17 +80,42 @@ class UserController {
                 if (cardExists) {
                   existsCards.push(i.name);
                 } else {
-                  set.cards.push(
-                    new Card({
-                      name: i.name,
-                      descriptions: i.descriptions,
-                      tags: i.tags ? i.tags : [],
-                      date: new Date().getTime(),
-                      user: candidate.username,
-                      favorite: false,
-                    })
-                  );
-                  userCardsNames = set.cards.map((i) => i.name);
+                  if (
+                    i.descriptions.length >= 6 &&
+                    typeof i.descriptions == "object"
+                  ) {
+                    FileService.deleteUserFile(
+                      rootPath,
+                      candidate._id.toString()
+                    );
+                    res.status(400).json({
+                      message: `In the ${i.name} length of descriptions >=6`,
+                    });
+                  } else if (i.tags.length >= 6 && typeof i.tags == "object") {
+                    FileService.deleteUserFile(
+                      rootPath,
+                      candidate._id.toString()
+                    );
+                    res.status(400).json({
+                      message: `In the ${i.name} length of tags >=6`,
+                    });
+                  } else {
+                    if (typeof i.descriptions == "object")
+                      i.descriptions = i.descriptions.filter((i) => i != "");
+                    if (typeof i.tags == "object")
+                      i.tags = i.tags.filter((i) => i != "");
+                    set.cards.push(
+                      new Card({
+                        name: i.name,
+                        descriptions: i.descriptions,
+                        tags: i.tags ? i.tags : [],
+                        date: new Date().getTime(),
+                        user: candidate._id,
+                        favorite: false,
+                      })
+                    );
+                    userCardsNames = set.cards.map((i) => i.name);
+                  }
                 }
               });
               if (startLength != set.cards.length) {
@@ -95,11 +129,14 @@ class UserController {
                   existsCards: existsCards,
                 });
               } else {
-                res.json({ message: "The cards have been added successfully" });
+                res.json({
+                  set: set,
+                  message: "The cards have been added successfully",
+                });
               }
             }
 
-            await deleteUserFile(rootPath, userFilePath);
+            await FileService.deleteUserFile(rootPath, userFilePath);
           })
           .catch((e) => {
             console.log(e);
@@ -117,20 +154,31 @@ class UserController {
               .status(400)
               .json({ message: "Incomplete data provided" });
           } else {
-            candidate.cards.push(
+            if (descriptions.length >= 6) {
+              res.status(400).json({
+                message: `In the ${cardname} length of descriptions >=6`,
+              });
+            }
+            if (tags.length >= 6) {
+              res.status(400).json({
+                message: `In the ${cardname} length of tags >=6`,
+              });
+            }
+            set.cards.push(
               new Card({
                 name: cardname,
                 descriptions: descriptions,
                 tags: tags ? tags : [],
                 date: new Date().getTime(),
-                user: candidate.username,
+                user: candidate._id,
                 favorite: false,
               })
             );
           }
+          candidate.markModified("studySets");
           await candidate.save();
         }
-        return res.json({ message: "Card was created" });
+        return res.json({ message: "Card was created", set: set });
       }
     } catch (e) {
       console.log(e);
@@ -220,7 +268,7 @@ class UserController {
 
   async deleteAccount(req, res, next) {
     try {
-      return await UserService.deleteAccount(req.user.username);
+      return res.json(await UserService.deleteAccount(req.user.username));
     } catch (e) {
       next(e);
     }
@@ -243,6 +291,16 @@ class UserController {
   async getCommunityCards(req, res, next) {
     try {
       return res.json(await UserService.getCommunityCards());
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getUserById(req, res, next) {
+    try {
+      return res.json(
+        (await UserService.getUserById(req.body.userId))[0].username
+      );
     } catch (e) {
       next(e);
     }

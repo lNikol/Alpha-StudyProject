@@ -30,7 +30,7 @@ app.use(cookieParser());
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/user/card", cardRouter);
-app.use("/files", fileRouter);
+app.use("/user/files", fileRouter);
 app.use("/user/studyset", studySetRouter);
 
 app.use(errorMiddleware);

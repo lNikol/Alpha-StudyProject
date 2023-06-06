@@ -58,9 +58,20 @@ class StudySetController {
       next(e);
     }
   }
+
   async getStudySets(req, res, next) {
     try {
       return res.json(await StudySetService.getStudySets(req.user.username));
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async sendFile(req, res, next) {
+    try {
+      res.download(
+        `./data/files/${req.user.id}/${req.body.studysetName}/${req.body.fileName}`
+      );
     } catch (e) {
       next(e);
     }

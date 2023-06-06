@@ -36,4 +36,10 @@ router.get(
   studySetController.getStudySets
 );
 
+router.post(
+  "/sendFile",
+  roleMiddleware(["USER", "ADMIN"]),
+  studySetController.sendFile
+);
+
 module.exports = router;

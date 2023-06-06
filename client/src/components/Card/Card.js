@@ -23,15 +23,18 @@ export default function Card({
   };
 
   return (
-    <div className="card" key={name + "sun"}>
+    <div
+      className="card"
+      key={name + "sun"}
+      style={{ backgroundColor: "rgb(201, 200, 203)" }}>
       <div className="card-body">
         <div className="min-w-0">
           {tags.map((t) => (
             <span
               key={t + "bob"}
-              className="d-inline-block bg-primary text-white px-2 py-1 rounded m-1">
-              {" "}
-              {t}{" "}
+              style={{ backgroundColor: "#f9bd09", color: "green" }}
+              className="d-inline-block px-2 py-1 rounded m-1">
+              {t}
             </span>
           ))}
 

@@ -8,7 +8,7 @@ import "./StudySet.css";
 export default function StudySet({ studySets, user }) {
   const { namee } = useParams();
   const [set, setSet] = useState([]);
-
+  const [activeTab, setActiveTab] = useState("Cards");
   const [cardname, setCardName] = useState("");
   const [descriptions, setDescriptions] = useState("");
   const [tags, setTags] = useState("");
@@ -38,9 +38,9 @@ export default function StudySet({ studySets, user }) {
     setQuiz(!quiz);
   };
 
-  const sendingFile = (e, name) => {
+  const sendingFile = (e, setName) => {
     let file = e.target.files[0];
-    uploadFile(file, name);
+    uploadFile(file, setName);
     e.target.value = "";
   };
 
@@ -109,6 +109,142 @@ export default function StudySet({ studySets, user }) {
     }
   };
 
+  const getFile = (setName, fileName) => {
+    userApi
+      .post(
+        "/studyset/sendFile",
+        {
+          studysetName: setName,
+          fileName: fileName,
+        },
+        { responseType: "blob" }
+      )
+
+      .then((res) => {
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch((e) => console.log(e));
+  };
+
+  const uploadSetFile = (file, setName) => {
+    let formData = new FormData();
+    formData.append("user", JSON.stringify(user));
+    formData.append("fileName", file.name);
+    formData.append("userFile", file);
+    formData.append("studysetName", setName);
+    userApi
+      .post("/files/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data; charset=UTF-8",
+        },
+      })
+      .then((res) => {
+        console.log(res.data);
+        setSet(res.data);
+      })
+      .catch((err) => {
+        alert(err?.response?.data?.message);
+      });
+  };
+
+  const Menu = () => {
+    return (
+      <div
+        style={{
+          marginLeft: "20px",
+          display: "inline-flex",
+          marginLeft: "2.5%",
+        }}>
+        <a
+          className="nav-link"
+          style={{ cursor: "pointer", marginLeft: "10px" }}
+          onClick={() => setActiveTab("Cards")}>
+          Cards
+        </a>
+        <a
+          className="nav-link"
+          style={{ cursor: "pointer", marginLeft: "50%" }}
+          onClick={() => setActiveTab("Files")}>
+          Files
+        </a>
+      </div>
+    );
+  };
+
+  const Content = ({ activeTab }) => {
+    switch (activeTab) {
+      case "Cards":
+        return (
+          <div
+            className="d-grid"
+            id="lis"
+            style={{
+              gridTemplateColumns: "repeat(auto-fill,minmax(276px,1fr))",
+              padding: "1.6rem 0",
+              gap: "1.6rem",
+              overflow: "auto",
+              maxHeight: "600px",
+            }}>
+            {set.cards != undefined
+              ? set.cards.map((i, index) => (
+                  <div className="content-container" key={index + "-=-"}>
+                    <Card key={i + index} {...i} studyset={namee} />
+                  </div>
+                ))
+              : ""}
+          </div>
+        );
+      case "Files":
+        return (
+          <div
+            id="lis"
+            style={{
+              overflow: "auto",
+              maxHeight: "600px",
+            }}>
+            <i>Upload file: </i>
+            <input
+              type="file"
+              name="userFile"
+              onChange={(e) => {
+                uploadSetFile(e.target.files[0], set.name);
+              }}
+              style={{ marginTop: "30px" }}
+            />
+
+            {set?.files?.length >= 1 ? (
+              <div style={{ display: "grid" }}>
+                {set.files.map((i) => (
+                  <a
+                    key={i.name}
+                    style={{
+                      cursor: "pointer",
+                      margin: "20px",
+                      maxWidth: "40%",
+                    }}
+                    onClick={() => {
+                      getFile(set.name, i.name);
+                    }}>
+                    {i.name}
+                  </a>
+                ))}
+              </div>
+            ) : (
+              ""
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   if (writingShow) {
     return (
       <>
@@ -145,10 +281,10 @@ export default function StudySet({ studySets, user }) {
       }}
       className="row">
       {set.name != "" ? (
-        <>
+        <div style={{ display: "flex" }}>
           <b>{set.name}</b>
-          <i>
-            {" "}
+          <i style={{ marginLeft: "20px" }}>
+            Send Excel file:{" "}
             <input
               type="file"
               name="userFile"
@@ -157,10 +293,12 @@ export default function StudySet({ studySets, user }) {
               }}
             />
           </i>
-        </>
+          <Menu setActiveTab={setActiveTab}></Menu>
+        </div>
       ) : (
         ""
       )}
+
       <div className="col-sm-3">
         <div>
           <h4>Cardname</h4>
@@ -183,12 +321,15 @@ export default function StudySet({ studySets, user }) {
             value={tags}
             onChange={(e) => setTags(e.target.value)}></input>
         </div>
-        <button onClick={createCard}>Create card</button>
+        <button className="btn btn-warning btn-sm" onClick={createCard}>
+          Create card
+        </button>
 
         {set.cards != undefined && set.cards.length >= 1 ? (
           <>
             <button
               style={{ margin: "15px" }}
+              className="btn btn-warning btn-sm"
               onClick={() => {
                 setWritingShow(false);
                 startQuiz();
@@ -196,7 +337,8 @@ export default function StudySet({ studySets, user }) {
               Quiz
             </button>
             <button
-              style={{ margin: "15px" }}
+              style={{ margin: "15px", marginLeft: "0" }}
+              className="btn btn-warning btn-sm"
               onClick={() => {
                 setWritingShow(!writingShow);
                 setQuiz(false);
@@ -208,27 +350,8 @@ export default function StudySet({ studySets, user }) {
           ""
         )}
       </div>
-
-      <div
-        className="col-sm-8 d-grid"
-        id="lis"
-        style={{
-          gridTemplateColumns: "repeat(auto-fill,minmax(276px,1fr))",
-          padding: "1.6rem 0",
-          gap: "1.6rem",
-          overflowY: "scroll",
-        }}>
-        {set.cards != undefined ? (
-          <>
-            {set.cards.map((i, index) => (
-              <div className="content-container" key={index + "-=-"}>
-                <Card key={i + index} {...i} studyset={namee} />
-              </div>
-            ))}
-          </>
-        ) : (
-          ""
-        )}
+      <div className="col-sm-8">
+        <Content activeTab={activeTab} />
       </div>
     </div>
   );

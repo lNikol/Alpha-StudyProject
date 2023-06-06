@@ -39,7 +39,7 @@ class UserController {
     try {
       let { cardname, descriptions, tags, studySet } = req.body;
       const errors = validationResult(req);
-      if (!errors.isEmpty()) {
+      if (!errors.isEmpty() && req.files.userFile === undefined) {
         return res.status(400).json({
           message: "Error during creating card",
           errors: errors.errors,

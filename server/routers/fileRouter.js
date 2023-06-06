@@ -5,8 +5,14 @@ const router = new Router();
 
 router.get("", roleMiddleware(["USER", "ADMIN"]), fileController.getFiles);
 router.post(
-  "/uploadFile",
+  "/upload",
   roleMiddleware(["USER", "ADMIN"]),
-  fileController.uploadFile
+  fileController.upload
 );
+router.delete(
+  "/deleteSetFiles",
+  roleMiddleware(["USER", "ADMIN"]),
+  fileController.deleteSetFiles
+);
+router.get;
 module.exports = router;

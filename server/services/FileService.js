@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { server_files_folder } = require("../config");
+const User = require("../models/User");
 
 class FileService {
   async createDir(file) {
@@ -75,6 +76,32 @@ class FileService {
             resolve([filePath, `${filePath}/${file.name}`]);
           }
         });
+      });
+    }
+  }
+
+  async deleteSetFolder(user_id, setName) {
+    let userFolder = path.join(
+      server_files_folder,
+      user_id.toString(),
+      setName
+    );
+    if (fs.existsSync(userFolder)) {
+      fs.readdir(userFolder, (e, files) => {
+        files.forEach((file) => {
+          fs.unlink(`${userFolder}/${file}`, (err) => {
+            if (err) {
+              console.error(err);
+              return;
+            }
+          });
+        });
+      });
+      fs.rm(userFolder, { recursive: true }, (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
       });
     }
   }

@@ -15,7 +15,11 @@ export default function HomePage({ username }) {
   return (
     <div
       className="main-block"
-      style={{ backgroundColor: "#333", textAlign: "center", padding: "20px" }}>
+      style={{
+        backgroundColor: "rgb(201, 200, 200)",
+        textAlign: "center",
+        padding: "20px",
+      }}>
       <div style={{ color: "#fff", fontSize: "24px", marginBottom: "20px" }}>
         Welcome, {username}
       </div>
@@ -32,7 +36,8 @@ export default function HomePage({ username }) {
               margin: "0 10px",
               textAlign: "center",
               lineHeight: "35px",
-              backgroundColor: currentDay === day ? "#fff" : "transparent",
+              backgroundColor:
+                currentDay === day ? "#FF7F50" : "rgb(201, 200, 200)",
             }}>
             {day}
           </div>

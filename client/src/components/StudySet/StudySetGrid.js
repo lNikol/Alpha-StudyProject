@@ -21,7 +21,7 @@ export default function StudySetGrid({ studySets, setter }) {
     <>
       <div>
         <button
-          className="btn btn-primary"
+          className="btn btn-warning"
           onClick={() => setStudySet(!studySet)}>
           Create Set
         </button>
@@ -40,8 +40,12 @@ export default function StudySetGrid({ studySets, setter }) {
       )}
 
       {studySets.map((i, index) => (
-        <Link key={index + "link"} to={`/studysets/${i.name}`}>
-          <b>{i.name}</b>
+        <Link
+          className="nav-link p-3 m-3 text-center rounded border border-primary"
+          style={{ maxWidth: `45%` }}
+          key={index + "link"}
+          to={`/studysets/${i.name}`}>
+          <h4>{i.name}</h4>
           <p>
             <b>{i.cards.length}</b> Cards
           </p>

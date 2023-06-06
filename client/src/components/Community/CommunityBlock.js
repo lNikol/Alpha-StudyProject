@@ -17,14 +17,16 @@ export default function CommunityBlock({ index, set, item }) {
     <>
       {index == 0 ? (
         <div className="card-header">
-          <h2>
+          <h2 style={{ marginTop: "10px" }}>
             {userNameDb}: {set.studyName}
           </h2>
         </div>
       ) : (
         ""
       )}
-      <ul className="list-group list-group-horizontal-sm">
+      <ul
+        className="list-group list-group-horizontal-sm"
+        style={{ marginTop: "10px" }}>
         <li className="list-group-item list-group-item-primary">{item.name}</li>
         <li className="list-group-item list-group-item-secondary">
           {item.descriptions.toString().split(",").join("/")}

@@ -38,7 +38,7 @@ export default function Library({ studySets_, setstudySets_, user }) {
         }}>
         <div className="col-sm-4">
           <h3>Create Your Own Set</h3>
-          <button className="btn btn-primary" onClick={getExample}>
+          <button className="btn btn-warning" onClick={getExample}>
             Get Example
           </button>
           <h2>Your sets </h2>
@@ -49,7 +49,7 @@ export default function Library({ studySets_, setstudySets_, user }) {
           />
         </div>
         <div className="col-sm-8">
-          <h1>StudySet</h1>
+          {/* <h1>StudySet</h1>
           <nav
             className="navbar navbar-expand-lg navbar-light bg-light"
             style={{ textAlign: "center" }}>
@@ -58,7 +58,7 @@ export default function Library({ studySets_, setstudySets_, user }) {
               <li className="nav-item nav-link">Files</li>
               <li className="nav-item nav-link">Notes</li>
             </ul>
-          </nav>
+          </nav> */}
         </div>
       </div>
     </div>

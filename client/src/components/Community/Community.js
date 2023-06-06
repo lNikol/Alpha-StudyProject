@@ -11,7 +11,11 @@ export default function Community() {
   }, []);
 
   return (
-    <div className="card-body">
+    <div
+      style={{
+        overflow: "auto",
+        maxHeight: "700px",
+      }}>
       {sets.map((i) =>
         i.cards.map((c, index) => (
           <div key={index + "op"}>

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import userApi from "../../http";
 import AuthService from "../../services/AuthService";
-import "./UserProfile.css";
 
 const UserProfile = ({ user, setIsAuth }) => {
   let [user_, setUser_] = useState(user || "");
@@ -51,10 +50,11 @@ const UserProfile = ({ user, setIsAuth }) => {
   };
 
   return (
-    <div>
+    <div className="m-2">
       <h2>Welcome, {user}</h2>
 
       <button
+        className="btn btn-warning btn-sm"
         onClick={async () => {
           await AuthService.logout();
           setIsAuth(false);
@@ -63,8 +63,10 @@ const UserProfile = ({ user, setIsAuth }) => {
         }}>
         Log out
       </button>
-      <div className="userInfo">
-        <label htmlFor="username">Name</label>
+      <div>
+        <label htmlFor="username" className="m-3">
+          Name
+        </label>
         <input
           type="text"
           id="username"
@@ -75,10 +77,16 @@ const UserProfile = ({ user, setIsAuth }) => {
         />
       </div>
       <div>
-        <button onClick={() => setShowChangePassword(!showChangePassword)}>
+        <button
+          className="btn btn-warning btn-sm"
+          onClick={() => setShowChangePassword(!showChangePassword)}>
           Change password
         </button>
-        <button onClick={handleDeleteAccountClick}>Delete Account</button>
+        <button
+          className="btn btn-warning btn-sm m-1"
+          onClick={handleDeleteAccountClick}>
+          Delete Account
+        </button>
       </div>
       {showChangePassword && (
         <div>
@@ -87,7 +95,7 @@ const UserProfile = ({ user, setIsAuth }) => {
             type="text"
             id="oldPassword"
             value={oldPassword}
-            className="UserPassword"
+            className="UserPassword m-2"
             onChange={(e) => setOldPassword(e.target.value)}
             onKeyDown={handleEnterPress}
           />
@@ -95,7 +103,7 @@ const UserProfile = ({ user, setIsAuth }) => {
           <input
             type="text"
             id="newPassword"
-            className="newPassword"
+            className="newPassword m-2"
             placeholder="New password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}

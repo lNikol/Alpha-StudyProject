@@ -1,6 +1,6 @@
 const { jwt_access_secret, jwt_refresh_secret } = require("../config");
-const Token = require("../models/Token");
 const jwt = require("jsonwebtoken");
+const Token = require("../models/Token");
 
 class TokenService {
   generateTokens(payload) {

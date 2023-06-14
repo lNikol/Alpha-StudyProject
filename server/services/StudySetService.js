@@ -1,6 +1,7 @@
 const ApiError = require("../exceptions/api-error");
 const StudySet = require("../models/StudySet");
 const User = require("../models/User");
+const FileService = require("./FileService");
 
 class StudySetService {
   async createSet(folder, username, name) {
@@ -14,6 +15,7 @@ class StudySetService {
     return user.studySets;
   }
 
+  //not used
   async changeName(username, name, newName) {
     if (!name) throw ApiError.BadRequest("name not found");
     const user = await User.findOne({ username });
@@ -36,6 +38,19 @@ class StudySetService {
   async getStudySets(username) {
     const user = await User.findOne({ username });
     return user.studySets;
+  }
+
+  async deleteSet(user_id, setName) {
+    const user = await User.findOne({ _id: user_id });
+    user.studySets.map(async (i, index) => {
+      if (i.name == setName) {
+        user.studySets.splice(index, 1);
+        user.markModified("studySets");
+        await user.save();
+      }
+    });
+
+    await FileService.deleteSetFolder(user_id, setName);
   }
 }
 

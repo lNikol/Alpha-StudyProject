@@ -1,7 +1,7 @@
+const { validationResult } = require("express-validator");
 const ApiError = require("../exceptions/api-error");
 const StudySetService = require("../services/StudySetService");
 const fileController = require("./fileController");
-const { validationResult } = require("express-validator");
 
 class StudySetController {
   async createSet(req, res, next) {
@@ -12,7 +12,7 @@ class StudySetController {
           message: errors.errors[0].msg,
         });
       }
-      //req.body - {studysetName:studysetName, type:"dir", parent:""}
+      //req.body - {studysetName:studysetName, type:"dir"||"", parent:""}
       if (!req.body.studysetName)
         throw ApiError.BadRequest("studysetName wasn't set");
 
@@ -29,11 +29,12 @@ class StudySetController {
     }
   }
 
+  //not used
   async changeName(req, res, next) {
     try {
       if (!errors.isEmpty()) {
         return res.status(400).json({
-          message: "Error during creating set",
+          message: "Error during changing the name of set",
           errors: errors.errors,
         });
       }
@@ -72,6 +73,14 @@ class StudySetController {
       res.download(
         `./data/files/${req.user.id}/${req.body.studysetName}/${req.body.fileName}`
       );
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async deleteSet(req, res, next) {
+    try {
+      await StudySetService.deleteSet(req.user.id, req.body.setName);
     } catch (e) {
       next(e);
     }

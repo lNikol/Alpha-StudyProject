@@ -1,62 +1,38 @@
-const ApiError = require("../exceptions/api-error");
 const User = require("../models/User");
 
 class CardService {
-  // async update(card) {
-  //   if (!card._id) {
-  //     throw new Error("Id not specified");
-  //   }
-  //   const updatedCard = await Card.findByIdAndUpdate(card._id, card, {
-  //     new: true,
-  //   });
-  //   return updatedCard;
-  // }
-
-  async deleteCardById({ username, cardId }) {
+  async deleteCardById(username, set, cardId) {
     const user = await User.findOne({ username });
     if (!cardId) throw new Error("Id not specified");
-    let afterFilter = user.cards.filter((card) => card._id === cardId);
-    let index = 0;
-    user.cards.map((i) => {
-      if (i._id == cardId) index = user.cards.indexOf(i);
-    });
-    if (
-      user.cards.length != 0 &&
-      user.cards.length != afterFilter.length &&
-      afterFilter.length != 0
-    ) {
-      user.cards.splice(index, 1);
-      await user.save();
-    }
-    if (
-      user.cards.length == afterFilter.length ||
-      afterFilter.length == 0 ||
-      user.cards.length == 0
-    )
-      throw ApiError.BadRequest("Card wasn't found");
+    let sets = user.studySets.map((i) => i.name);
+    let currentSet = user.studySets[sets.indexOf(set)];
+    currentSet.cards.splice(
+      currentSet.cards.indexOf(currentSet.cards.find((i) => i._id == cardId)),
+      1
+    );
+    user.markModified("studySets");
+    await user.save();
+    return currentSet;
   }
 
-
+  // Not used in this version
   async replaceFavorite(username, cardname, favorite, studyset) {
     const candidate = await User.findOne({ username });
-    candidate.studySets.map((i)=>{
-      if(i.name==studyset){
+    candidate.studySets.map((i) => {
+      if (i.name == studyset) {
         i.cards.map((c) => {
-          if (c.name == cardname)  { c.favorite = favorite; }
+          if (c.name == cardname) {
+            c.favorite = favorite;
+          }
         });
       }
-    })
-    
+    });
+
     candidate.markModified("studySets");
     await candidate.save();
   }
 
-  // for delete
-  async getCards(username) {
-    let user = await User.findOne({ username });
-    return user.cards;
-  }
-
+  // Not used in this version
   async replaceCardsState(username, cardsForChange) {
     // cardsForChange - [{name:name, knowledge:newKnowledge},{name:name, knowledge:newKnowledge}]
     // knowledge - bad, ok, good

@@ -1,11 +1,8 @@
-const Router = require("express");
-
 const { check } = require("express-validator");
+const Router = require("express");
+const router = new Router();
 const roleMiddleware = require("../middleware/roleMiddleware");
 const userController = require("../controllers/userController");
-const cardController = require("../controllers/cardController");
-
-const router = new Router();
 
 router.post(
   "/registration",
@@ -80,12 +77,6 @@ router.post(
   "/communityCards",
   roleMiddleware(["USER", "ADMIN"]),
   userController.getCommunityCards
-);
-
-router.post(
-  "/cards",
-  roleMiddleware(["USER", "ADMIN"]),
-  cardController.getCards
 );
 
 module.exports = router;

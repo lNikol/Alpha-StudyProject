@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import userApi from "../../http";
 import AuthService from "../../services/AuthService";
+import { useNavigate } from "react-router-dom";
 
 const UserProfile = ({ user, setIsAuth }) => {
-  let [user_, setUser_] = useState(user || "");
+  const navigate = useNavigate();
+
+  const [user_, setUser_] = useState(user || "");
   const [newPassword, setNewPassword] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -20,12 +23,14 @@ const UserProfile = ({ user, setIsAuth }) => {
                 localStorage.setItem("token", res.data.accessToken);
                 if (res.data.user.username) setUser_(res.data.user.username);
                 alert("Name was changed");
-                // document.location = "/profile";
               })
               .catch((e) => alert(e?.response?.data?.message));
           })
-          .catch((e) => alert(e?.response?.data?.message));
-      } else if (e.target.className === "newPassword") {
+          .catch((e) => {
+            alert(e?.response?.data?.message);
+            setUser_(user);
+          });
+      } else if (e.target.id === "newPassword") {
         userApi
           .put("/changePassword", {
             oldPassword,
@@ -45,21 +50,24 @@ const UserProfile = ({ user, setIsAuth }) => {
   const handleDeleteAccountClick = () => {
     userApi
       .delete("/deleteAccount")
-      .then(() => (document.location = "/"))
+      .then(() => {
+        setIsAuth(false);
+        localStorage.token = "";
+        navigate("/");
+      })
       .catch((e) => console.log(e.response.data.message));
   };
 
   return (
     <div className="m-2">
       <h2>Welcome, {user}</h2>
-
       <button
         className="btn btn-warning btn-sm"
         onClick={async () => {
-          await AuthService.logout();
           setIsAuth(false);
+          await AuthService.logout();
           localStorage.setItem("token", "");
-          document.location = "/";
+          navigate("/");
         }}>
         Log out
       </button>
@@ -95,7 +103,7 @@ const UserProfile = ({ user, setIsAuth }) => {
             type="text"
             id="oldPassword"
             value={oldPassword}
-            className="UserPassword m-2"
+            className="m-2"
             onChange={(e) => setOldPassword(e.target.value)}
             onKeyDown={handleEnterPress}
           />
@@ -104,7 +112,6 @@ const UserProfile = ({ user, setIsAuth }) => {
             type="text"
             id="newPassword"
             className="newPassword m-2"
-            placeholder="New password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             onKeyDown={handleEnterPress}

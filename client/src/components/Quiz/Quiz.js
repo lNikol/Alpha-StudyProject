@@ -15,25 +15,21 @@ export default function Quiz({ cards, max }) {
       translate: i.descriptions,
     }));
 
-    const lang1 = typeArr.map(({ original, translate }) => ({
+    let lang1 = typeArr.map(({ original, translate }) => ({
       original: original,
       translate: translate,
     }));
-
+    lang1.sort(() => Math.random() - 0.4);
     for (let i = 0; i < max; i++) tArr[i] = lang1[i];
-
     setQuizArr(tArr);
   }, []);
 
   const checkUserAnswer = () => {
     if (quizArr[currentIndex].translate.length >= 2) {
-      if (quizArr[currentIndex].translate.includes(inputValue))
-        console.log("good answer");
-      else
-        setUnsuccessCards([
-          ...unsuccessCards,
-          { ...quizArr[currentIndex], answer: inputValue },
-        ]);
+      setUnsuccessCards([
+        ...unsuccessCards,
+        { ...quizArr[currentIndex], answer: inputValue },
+      ]);
     } else {
       if (quizArr[currentIndex].translate.toString() != inputValue)
         setUnsuccessCards([
@@ -55,7 +51,7 @@ export default function Quiz({ cards, max }) {
 
   return (
     quizArr[currentIndex] && (
-      <div>
+      <div className="m-3">
         <p>{quizArr[currentIndex].original}</p>
         <input
           type="text"
@@ -63,6 +59,12 @@ export default function Quiz({ cards, max }) {
           onChange={(e) => setInputValue(e.target.value)}
         />
         <button
+          className="rounded m-1"
+          style={{
+            background: "rgb(241, 180, 73)",
+            border: "0",
+            padding: "3px 5px 3px 5px",
+          }}
           onClick={() => {
             if (inputValue.trim() == "") alert("Please, write an answer");
             else handleNext();

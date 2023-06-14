@@ -1,6 +1,7 @@
+const { server_files_folder } = require("../config");
 const fs = require("fs");
 const path = require("path");
-const { server_files_folder } = require("../config");
+const File = require("../models/File");
 const User = require("../models/User");
 
 class FileService {
@@ -15,7 +16,6 @@ class FileService {
       try {
         if (!fs.existsSync(filePath)) {
           fs.mkdirSync(filePath);
-
           return resolve({ message: "File was created" });
         } else {
           return reject({ message: "File exists" });
@@ -49,18 +49,37 @@ class FileService {
     }
   }
 
-  async deleteUserFile(root, filePath) {
-    const fs = require("fs");
+  async deleteUserFile(root, filePath, body, user) {
+    let setDB = "";
+    if (root === "") {
+      const { set, fileName, fileId } = body;
+      const userDB = await User.findOne({ _id: user.id });
+      userDB.studySets.map((i) => {
+        if (i.name == set) {
+          setDB = i;
+          i.files.map(async (f, index) => {
+            if (f.id.toString() == fileId) {
+              i.files.splice(index, 1);
+              userDB.markModified("studySets");
+              await userDB.save();
+            }
+          });
+        }
+      });
+      await File.findOneAndRemove({ _id: fileId });
+
+      filePath = path.join(server_files_folder, user.id, set, fileName);
+    }
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
-      fs.rmdirSync(root);
+      if (root != "") fs.rmdirSync(root);
     }
+    return setDB;
   }
 
   async saveUserFile(file, userId) {
     const { server_folder } = require("../config");
     const path = require("path");
-    const fs = require("fs");
     if (file == "") {
       return Promise.resolve(["", ""]);
     } else {

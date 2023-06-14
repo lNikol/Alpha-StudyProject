@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import UnsuccessList from "./UnsuccessList";
 
-export default function Writing({ cards, languages }) {
+export default function Writing({ cards, languages, maxNum }) {
   const [show, setShow] = useState(false);
   const [unsuccessCards, setUnsuccessCards] = useState([]);
   const [allWords, setAllWords] = useState([]);
@@ -18,6 +18,7 @@ export default function Writing({ cards, languages }) {
       original: original,
       translate: translate,
     }));
+    lang1.sort(() => Math.random() - 0.4);
 
     if (languages) {
       const lang2 = typeArr.map(({ original, translate }) => ({
@@ -32,9 +33,7 @@ export default function Writing({ cards, languages }) {
 
   const checkUserAnswer = () => {
     if (allWords[currentIndex].translate.length >= 2) {
-      if (allWords[currentIndex].translate.includes(inputValue))
-        console.log("good answer");
-      else
+      if (!allWords[currentIndex].translate.includes(inputValue))
         setUnsuccessCards([
           ...unsuccessCards,
           { ...allWords[currentIndex], answer: inputValue },
@@ -60,7 +59,7 @@ export default function Writing({ cards, languages }) {
 
   return (
     allWords[currentIndex] && (
-      <div>
+      <div style={{ margin: "5px" }}>
         <p>{allWords[currentIndex].original}</p>
         <input
           type="text"
@@ -68,6 +67,13 @@ export default function Writing({ cards, languages }) {
           onChange={(e) => setInputValue(e.target.value)}
         />
         <button
+          className="rounded"
+          style={{
+            background: "rgb(241, 180, 73)",
+            border: "0",
+            padding: "3px 8px 3px 8px",
+            marginLeft: "3px",
+          }}
           onClick={() => {
             if (inputValue.trim() == "") alert("Please, write an answer");
             else handleNext();

@@ -3,18 +3,19 @@ import userApi from "../../http";
 import StudySetGrid from "../StudySet/StudySetGrid";
 
 export default function Library({ studySets_, setstudySets_, user }) {
-  let [studySets, setStudySets] = useState(studySets_);
+  const [studySets, setStudySets] = useState(studySets_);
   useEffect(() => {
     userApi
       .get("/studyset/studysets")
       .then((res) => {
         if (res) {
-          setStudySets(res.data);
           setstudySets_(res.data);
+          setStudySets(res.data);
         }
       })
       .catch((e) => console.log(e));
-  }, []);
+  }, [() => {}]);
+
   const getExample = () => {
     userApi
       .post("/sendExample", "", { responseType: "blob" })
@@ -44,7 +45,7 @@ export default function Library({ studySets_, setstudySets_, user }) {
           <h2>Your sets </h2>
           <StudySetGrid
             studySets={studySets}
-            setter={setStudySets}
+            setStudySets={setStudySets}
             user={user}
           />
         </div>

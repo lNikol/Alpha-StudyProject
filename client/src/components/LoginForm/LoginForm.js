@@ -12,15 +12,26 @@ const LoginForm = ({ isAuth, setUser }) => {
         placeholder="Username"
         onChange={(e) => setUserName(e.target.value)}
         value={username}
+        style={{
+          background: "#EFA31C",
+          border: "1px solid black",
+        }}
+        className="rounded m-1"
       />
       <input
         type="password"
         placeholder="Password"
         onChange={(e) => setPassword(e.target.value)}
         value={password}
+        style={{
+          background: "#EFA31C",
+          border: "1px solid black",
+        }}
+        className="rounded m-1"
       />
 
       <button
+        className="btn-sm rounded text-white"
         onClick={() => {
           AuthService.login(username, password)
             .then((res) => {
@@ -29,11 +40,17 @@ const LoginForm = ({ isAuth, setUser }) => {
               isAuth(true);
             })
             .catch((e) => alert(e.response?.data?.message));
+        }}
+        style={{
+          marginLeft: "5px",
+          background: "#808080",
+          border: "1px solid black",
         }}>
         Login
       </button>
 
       <button
+        className="btn-sm rounded text-white"
         onClick={() => {
           AuthService.registration(username, password)
             .then((res) => {
@@ -52,6 +69,11 @@ const LoginForm = ({ isAuth, setUser }) => {
                 alert(e.response?.data?.message);
               }
             });
+        }}
+        style={{
+          marginLeft: "5px",
+          background: "#808080",
+          border: "1px solid black",
         }}>
         Registration
       </button>

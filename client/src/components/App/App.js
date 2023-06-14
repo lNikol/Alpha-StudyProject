@@ -8,7 +8,6 @@ import HomePage from "../HomePage/HomePage";
 import UserProfile from "../UserProfile/UserProfile";
 import Community from "../Community/Community";
 import Library from "../Library/Library";
-import StudySetGrid from "../StudySet/StudySetGrid";
 import StudySet from "../StudySet/StudySet";
 
 async function checkAuth(isAuth, user) {
@@ -20,7 +19,6 @@ async function checkAuth(isAuth, user) {
     user(response.data.user);
     isAuth(true);
   } catch (e) {
-    // console.log(e);
     console.log(e.response?.data?.message);
   }
 }
@@ -56,6 +54,13 @@ function App() {
                 user={user}
               />
             }></Route>
+          <Route exact path="library/studySets">
+            <Route
+              path=":namee"
+              element={<StudySet studySets={studySets} user={user} />}
+            />
+          </Route>
+
           <Route
             exact
             path="/profile"
@@ -63,13 +68,6 @@ function App() {
               <UserProfile user={user.username} setIsAuth={setIsAuth} />
             }></Route>
           <Route exact path="/community" element={<Community />}></Route>
-          <Route exact path="/studySets">
-            <Route index element={<StudySetGrid studySets={studySets} />} />
-            <Route
-              path=":namee"
-              element={<StudySet studySets={studySets} user={user} />}
-            />
-          </Route>
         </Routes>
       </Router>
     </div>

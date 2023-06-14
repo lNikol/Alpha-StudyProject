@@ -1,12 +1,14 @@
 const excelReader = require("../helpers/excelReader");
 const { template_path } = require("../config");
+
 const User = require("../models/User");
 const Card = require("../models/Card");
-const UserService = require("../services/UserService");
+const File = require("../models/File");
+
 const { validationResult } = require("express-validator");
 const ApiError = require("../exceptions/api-error");
+const UserService = require("../services/UserService");
 const FileService = require("../services/FileService");
-const File = require("../models/File");
 
 class UserController {
   async registration(req, res, next) {
@@ -35,6 +37,54 @@ class UserController {
     }
   }
 
+  async login(req, res, next) {
+    try {
+      const { username, password } = req.body;
+      const userData = await UserService.login(username, password);
+      res.cookie("refreshToken", userData.refreshToken, {
+        maxAge: 15 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+      });
+      return res.json(userData);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async logout(req, res, next) {
+    try {
+      const { refreshToken } = req.cookies;
+      const token = await UserService.logout(refreshToken);
+      res.clearCookie("refreshToken");
+      return res.json(token);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async deleteAccount(req, res, next) {
+    try {
+      res.clearCookie("refreshToken");
+      return res.json(await UserService.deleteAccount(req.user.username));
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async refresh(req, res, next) {
+    try {
+      const { refreshToken } = req.cookies;
+      const userData = await UserService.refresh(refreshToken);
+      res.cookie("refreshToken", userData.refreshToken, {
+        maxAge: 15 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+      });
+      return res.json(userData);
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async createCard(req, res) {
     try {
       let { cardname, descriptions, tags, studySet } = req.body;
@@ -53,28 +103,24 @@ class UserController {
       let username = req.user.username;
       const candidate = await User.findOne({ username });
       let setsNames = candidate.studySets.map((i) => i.name);
-      let set = candidate.studySets[setsNames.indexOf(studySet)];
-      let userCardsNames = set.cards.map((i) => i?.name);
+      let currentSet = candidate.studySets[setsNames.indexOf(studySet)];
+      let userCardsNames = currentSet.cards.map((i) => i?.name);
       let cardExists = false;
 
       let userFile = "";
       if (req.files) userFile = req.files.userFile;
 
       if (userFile != "") {
-        if (!userFile.name.includes(".xlsx"))
-          return res
-            .status(401)
-            .json({ message: "File extension isn't .xlsx" });
-
         let [rootPath, userFilePath] = await FileService.saveUserFile(
           userFile,
           candidate._id
         );
+
         await excelReader(userFilePath)
           .then(async (cards) => {
             if (cards) {
               let existsCards = [];
-              let startLength = set.cards.length;
+              let startLength = currentSet.cards.length;
               cards.map((i) => {
                 cardExists = userCardsNames.includes(i.name) ? true : false;
                 if (cardExists) {
@@ -104,7 +150,7 @@ class UserController {
                       i.descriptions = i.descriptions.filter((i) => i != "");
                     if (typeof i.tags == "object")
                       i.tags = i.tags.filter((i) => i != "");
-                    set.cards.push(
+                    currentSet.cards.push(
                       new Card({
                         name: i.name,
                         descriptions: i.descriptions,
@@ -114,11 +160,12 @@ class UserController {
                         favorite: false,
                       })
                     );
-                    userCardsNames = set.cards.map((i) => i.name);
+                    userCardsNames = currentSet.cards.map((i) => i.name);
                   }
                 }
               });
-              if (startLength != set.cards.length) {
+
+              if (startLength != currentSet.cards.length) {
                 candidate.markModified("studySets");
                 await candidate.save();
               }
@@ -127,10 +174,11 @@ class UserController {
                 res.status(500).json({
                   message: "Cards weren't added because they already exist",
                   existsCards: existsCards,
+                  set: currentSet,
                 });
               } else {
                 res.json({
-                  set: set,
+                  set: currentSet,
                   message: "The cards have been added successfully",
                 });
               }
@@ -146,6 +194,7 @@ class UserController {
           });
       } else {
         cardExists = userCardsNames.includes(cardname) ? true : false;
+
         if (cardExists)
           return res.status(500).json({ message: "This card already exists" });
         else {
@@ -164,7 +213,7 @@ class UserController {
                 message: `In the ${cardname} length of tags >=6`,
               });
             }
-            set.cards.push(
+            currentSet.cards.push(
               new Card({
                 name: cardname,
                 descriptions: descriptions,
@@ -178,7 +227,7 @@ class UserController {
           candidate.markModified("studySets");
           await candidate.save();
         }
-        return res.json({ message: "Card was created", set: set });
+        return res.json({ message: "Card was created", set: currentSet });
       }
     } catch (e) {
       console.log(e);
@@ -195,7 +244,6 @@ class UserController {
         password,
         newPassword
       );
-
       return res.json({ message: "Password was changed" });
     } catch (e) {
       next(e);
@@ -207,7 +255,7 @@ class UserController {
       let { newName } = req.body;
       if (!newName) throw ApiError.BadRequest("New name wasn't set");
       await UserService.changeName(req.user.username, newName);
-      res.json({ message: "Name was changed" });
+      return res.json({ message: "Name was changed" });
     } catch (e) {
       next(e);
     }
@@ -218,73 +266,6 @@ class UserController {
       res.download(template_path);
     } catch (e) {
       res.status(500).json(e);
-    }
-  }
-
-  // async searchCard(req, res) {
-  //   try {
-  //     //searchcard - name of card
-  //     const { searchcard } = JSON.parse(req.body.user);
-  //     const { username } = req.user.username;
-  //     let user = await User.findOne({ username });
-  //     let userWithCard = await User.findOne({ "cards.name": searchcard });
-  //     if (!searchcard)
-  //       res.status(400).json({ message: "Card for search wasn't selected" });
-  //     if (userWithCard == null || username != userWithCard?.username) {
-  //       res.status(500).json({ message: "Card wasn't found" });
-  //     }
-  //     user.cards.map((i) => {
-  //       if (i.name == searchcard) res.json(i);
-  //     });
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // }
-
-  async login(req, res, next) {
-    try {
-      const { username, password } = req.body;
-      const userData = await UserService.login(username, password);
-      res.cookie("refreshToken", userData.refreshToken, {
-        maxAge: 15 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-      });
-      return res.json(userData);
-    } catch (e) {
-      next(e);
-    }
-  }
-
-  async logout(req, res, next) {
-    try {
-      const { refreshToken } = req.cookies;
-      const token = await UserService.logout(refreshToken);
-      res.clearCookie("refreshToken");
-      return res.json(token);
-    } catch (e) {
-      next(e);
-    }
-  }
-
-  async deleteAccount(req, res, next) {
-    try {
-      return res.json(await UserService.deleteAccount(req.user.username));
-    } catch (e) {
-      next(e);
-    }
-  }
-
-  async refresh(req, res, next) {
-    try {
-      const { refreshToken } = req.cookies;
-      const userData = await UserService.refresh(refreshToken);
-      res.cookie("refreshToken", userData.refreshToken, {
-        maxAge: 15 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-      });
-      return res.json(userData);
-    } catch (e) {
-      next(e);
     }
   }
 

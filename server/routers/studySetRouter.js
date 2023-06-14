@@ -1,8 +1,8 @@
-const Router = require("express");
 const { check } = require("express-validator");
-const studySetController = require("../controllers/studySetController");
+const Router = require("express");
 const router = new Router();
 const roleMiddleware = require("../middleware/roleMiddleware");
+const studySetController = require("../controllers/studySetController");
 
 router.get(
   "/cards",
@@ -40,6 +40,12 @@ router.post(
   "/sendFile",
   roleMiddleware(["USER", "ADMIN"]),
   studySetController.sendFile
+);
+
+router.delete(
+  "/deleteSet",
+  roleMiddleware(["USER", "ADMIN"]),
+  studySetController.deleteSet
 );
 
 module.exports = router;

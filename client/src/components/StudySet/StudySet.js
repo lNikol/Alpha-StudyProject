@@ -3,9 +3,12 @@ import Card from "../Card/Card";
 import Writing from "../Writing/Writing";
 import QuizComponent from "../Quiz/QuizComponent";
 import userApi from "../../http";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "./StudySet.css";
+
 export default function StudySet({ studySets, user }) {
+  const navigate = useNavigate();
+
   const { namee } = useParams();
   const [set, setSet] = useState([]);
   const [activeTab, setActiveTab] = useState("Cards");
@@ -18,7 +21,6 @@ export default function StudySet({ studySets, user }) {
   const [languages, setLanguages] = useState(false);
 
   let allTags = [];
-
   useEffect(() => {
     studySets.forEach((e) => {
       if (e.name === namee) {
@@ -39,8 +41,7 @@ export default function StudySet({ studySets, user }) {
   };
 
   const sendingFile = (e, setName) => {
-    let file = e.target.files[0];
-    uploadFile(file, setName);
+    uploadFile(e.target.files[0], setName);
     e.target.value = "";
   };
 
@@ -79,6 +80,7 @@ export default function StudySet({ studySets, user }) {
         } else {
           alert(err);
         }
+        setSet(err.response.data.set);
       });
   };
 
@@ -98,7 +100,6 @@ export default function StudySet({ studySets, user }) {
           setDescriptions("");
           setTags("");
           setSet(res.data.set);
-          alert(res.data.message);
         })
         .catch((e) => {
           let msg = "";
@@ -144,13 +145,28 @@ export default function StudySet({ studySets, user }) {
           "Content-Type": "multipart/form-data; charset=UTF-8",
         },
       })
-      .then((res) => {
-        console.log(res.data);
-        setSet(res.data);
-      })
+      .then((res) => setSet(res.data))
       .catch((err) => {
         alert(err?.response?.data?.message);
       });
+  };
+
+  const deleteThisFile = (setName, file) => {
+    userApi
+      .delete("/files/deleteFile", {
+        data: { set: setName, fileName: file.name, fileId: file.id },
+      })
+      .then((res) => (res.data != "" ? setSet(res.data) : ""))
+      .catch((e) => console.log(e));
+  };
+
+  const deleteSet = () => {
+    userApi
+      .delete("/studyset/deleteSet", {
+        data: { setName: set.name },
+      })
+      .catch((e) => console.log(e));
+    navigate("/library");
   };
 
   const Menu = () => {
@@ -162,14 +178,28 @@ export default function StudySet({ studySets, user }) {
           marginLeft: "2.5%",
         }}>
         <a
-          className="nav-link"
-          style={{ cursor: "pointer", marginLeft: "10px" }}
+          className="nav-link rounded-pill"
+          style={{
+            cursor: "pointer",
+            marginLeft: "10px",
+            paddingLeft: "10px",
+            background: "lightgray",
+            paddingRight: "10px",
+            marginTop: "5px",
+          }}
           onClick={() => setActiveTab("Cards")}>
           Cards
         </a>
         <a
-          className="nav-link"
-          style={{ cursor: "pointer", marginLeft: "50%" }}
+          className="nav-link rounded-pill"
+          style={{
+            cursor: "pointer",
+            marginLeft: "10px",
+            background: "lightgray",
+            paddingLeft: "10px",
+            paddingRight: "10px",
+            marginTop: "5px",
+          }}
           onClick={() => setActiveTab("Files")}>
           Files
         </a>
@@ -177,6 +207,11 @@ export default function StudySet({ studySets, user }) {
     );
   };
 
+  const checkColor = () => {
+    currentColor === 1 ? (currentColor = 0) : currentColor++;
+  };
+  const colors = ["#FDAD1C", "#C8A2C8"];
+  let currentColor = 0;
   const Content = ({ activeTab }) => {
     switch (activeTab) {
       case "Cards":
@@ -194,7 +229,12 @@ export default function StudySet({ studySets, user }) {
             {set.cards != undefined
               ? set.cards.map((i, index) => (
                   <div className="content-container" key={index + "-=-"}>
-                    <Card key={i + index} {...i} studyset={namee} />
+                    <Card
+                      setSet={setSet}
+                      key={i + index}
+                      {...i}
+                      studyset={namee}
+                    />
                   </div>
                 ))
               : ""}
@@ -208,31 +248,49 @@ export default function StudySet({ studySets, user }) {
               overflow: "auto",
               maxHeight: "600px",
             }}>
-            <i>Upload file: </i>
-            <input
-              type="file"
-              name="userFile"
-              onChange={(e) => {
-                uploadSetFile(e.target.files[0], set.name);
-              }}
-              style={{ marginTop: "30px" }}
-            />
-
+            <div className="m-1">
+              <i>Upload file: </i>
+              <input
+                type="file"
+                name="userFile"
+                accept=".docx,.doc,.pdf,.txt"
+                onChange={(e) => {
+                  uploadSetFile(e.target.files[0], set.name);
+                }}
+                style={{ marginTop: "30px" }}
+              />
+            </div>
             {set?.files?.length >= 1 ? (
               <div style={{ display: "grid" }}>
                 {set.files.map((i) => (
-                  <a
-                    key={i.name}
+                  <div
+                    key={i.name + "file"}
+                    className="d-inline text-center rounded m-1"
                     style={{
-                      cursor: "pointer",
-                      margin: "20px",
                       maxWidth: "40%",
+                      background: colors[currentColor],
                     }}
-                    onClick={() => {
-                      getFile(set.name, i.name);
-                    }}>
-                    {i.name}
-                  </a>
+                    onLoad={checkColor()}>
+                    <a
+                      key={i.name}
+                      style={{
+                        cursor: "pointer",
+                        margin: "20px",
+                        maxWidth: "80%",
+                      }}
+                      onClick={() => {
+                        getFile(set.name, i.name);
+                      }}>
+                      {i.name}
+                    </a>
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm rounded m-2"
+                      style={{ float: "right" }}
+                      onClick={() => {
+                        deleteThisFile(set.name, i);
+                      }}></button>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -247,12 +305,24 @@ export default function StudySet({ studySets, user }) {
 
   if (writingShow) {
     return (
-      <>
+      <div className="m-2">
         <form>
-          <label htmlFor="languages">Two languages?</label>
-          <input id="languages" type="checkbox" />
+          <label htmlFor="languages">
+            Two languages?
+            <input
+              id="languages"
+              type="checkbox"
+              style={{ marginLeft: "5px" }}
+            />
+          </label>
         </form>
         <button
+          className="rounded btn btn-warning"
+          style={{
+            border: "0",
+            padding: "3px 8px 3px 8px",
+            marginLeft: "3px",
+          }}
           onClick={() => {
             setLanguages(document.getElementById("languages").checked);
             setWritingShow(!writingShow);
@@ -260,7 +330,7 @@ export default function StudySet({ studySets, user }) {
           }}>
           Start
         </button>
-      </>
+      </div>
     );
   }
   if (writing) return <Writing cards={set.cards} languages={languages} />;
@@ -275,26 +345,33 @@ export default function StudySet({ studySets, user }) {
         "--bs-gutter-y": "0",
         display: "flex",
         flexWrap: "wrap",
-        marginTop: "calc(-1 * var(--bs-gutter-y))",
+        marginTop: "10px",
         marginRight: "calc(-.5 * var(--bs-gutter-x))",
         marginLeft: "10px",
       }}
       className="row">
       {set.name != "" ? (
-        <div style={{ display: "flex" }}>
-          <b>{set.name}</b>
-          <i style={{ marginLeft: "20px" }}>
-            Send Excel file:{" "}
-            <input
-              type="file"
-              name="userFile"
-              onChange={(e) => {
-                sendingFile(e, set.name);
-              }}
-            />
-          </i>
-          <Menu setActiveTab={setActiveTab}></Menu>
-        </div>
+        <>
+          <div style={{ display: "flex" }}>
+            <i>
+              Send Excel file:{" "}
+              <input
+                style={{
+                  fontFamily: "unset",
+                  lineHeight: "unset",
+                  fontSize: "unset",
+                }}
+                type="file"
+                name="userFile"
+                accept=".xlsx"
+                onChange={(e) => {
+                  sendingFile(e, set.name);
+                }}
+              />
+            </i>
+            <Menu setActiveTab={setActiveTab}></Menu>
+          </div>
+        </>
       ) : (
         ""
       )}
@@ -321,15 +398,22 @@ export default function StudySet({ studySets, user }) {
             value={tags}
             onChange={(e) => setTags(e.target.value)}></input>
         </div>
-        <button className="btn btn-warning btn-sm" onClick={createCard}>
+        <button
+          className="btn btn-warning btn-sm rounded-pill"
+          style={{
+            padding: "4px 10px 4px 10px",
+            marginTop: "5px",
+            marginBottom: "5px",
+          }}
+          onClick={createCard}>
           Create card
         </button>
 
         {set.cards != undefined && set.cards.length >= 1 ? (
           <>
             <button
-              style={{ margin: "15px" }}
-              className="btn btn-warning btn-sm"
+              style={{ margin: "15px", padding: "4px 15px 4px 15px" }}
+              className="btn btn-warning btn-sm rounded-pill"
               onClick={() => {
                 setWritingShow(false);
                 startQuiz();
@@ -337,8 +421,12 @@ export default function StudySet({ studySets, user }) {
               Quiz
             </button>
             <button
-              style={{ margin: "15px", marginLeft: "0" }}
-              className="btn btn-warning btn-sm"
+              style={{
+                margin: "15px",
+                marginLeft: "0",
+                padding: "4px 15px 4px 15px",
+              }}
+              className="btn btn-warning btn-sm rounded-pill"
               onClick={() => {
                 setWritingShow(!writingShow);
                 setQuiz(false);
@@ -349,8 +437,27 @@ export default function StudySet({ studySets, user }) {
         ) : (
           ""
         )}
+        <div style={{ height: "1px" }}></div>
+        <button
+          onClick={deleteSet}
+          className="btn btn-warning btn-sm rounded-pill"
+          style={{ padding: "4px 13px 4px 13px" }}>
+          Delete set
+        </button>
       </div>
       <div className="col-sm-8">
+        <h2
+          className="rounded "
+          style={{
+            border: "1px solid #f0f0f0",
+            maxWidth: "25%",
+            textAlign: "center",
+            marginLeft: "440px",
+            paddingBottom: "10px",
+            marginBottom: "20px",
+          }}>
+          {set.name}
+        </h2>
         <Content activeTab={activeTab} />
       </div>
     </div>

@@ -1,12 +1,14 @@
+const { jwt_access_secret, jwt_refresh_secret } = require("../config");
+const ApiError = require("../exceptions/api-error");
 const UserDto = require("../dtos/user-dto");
+
 const Role = require("../models/Role");
 const User = require("../models/User");
-const TokenService = require("./TokenService");
-const bcrypt = require("bcryptjs");
-const ApiError = require("../exceptions/api-error");
-const jwt = require("jsonwebtoken");
-const { jwt_access_secret, jwt_refresh_secret } = require("../config");
 const File = require("../models/File");
+
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const TokenService = require("./TokenService");
 const FileService = require("./FileService");
 
 class UserService {

@@ -19,8 +19,8 @@ export default function QuizComponent({ tags, cards }) {
   if (start) return <Quiz cards={cards} max={numCards} />;
   return (
     <div>
-      <div>
-        <div style={{ display: "inline-block", fontSize: "20px" }}>
+      <div className="m-2">
+        <div style={{ display: "inline-block" }}>
           <label htmlFor="numOfCards">Number of cards:</label>
           <input
             style={{ marginLeft: "10px" }}
@@ -34,12 +34,11 @@ export default function QuizComponent({ tags, cards }) {
           style={{
             display: "inline-block",
             marginLeft: "10px",
-            fontSize: "20px",
           }}>
           /<b>{cards.length}</b>
         </div>
       </div>
-      <div>
+      {/* <div>
         <label htmlFor="tags">Tags:</label>
         <select id="tags">
           <option value="all">All</option>
@@ -50,9 +49,9 @@ export default function QuizComponent({ tags, cards }) {
             </option>
           ))}
         </select>
-      </div>
+      </div> */}
 
-      <div>
+      {/* <div>
         <label htmlFor="rating">Rating:</label>
         <select id="rating">
           <option value="bad">Bad</option>
@@ -60,9 +59,14 @@ export default function QuizComponent({ tags, cards }) {
           <option value="good">Good</option>
           <option value="unrated">Unrated</option>
         </select>
-      </div>
+      </div> */}
 
-      <button onClick={handleStartQuiz}>Start Quiz</button>
+      <button
+        className="btn btn-warning btn-sm rounded-pill m-2"
+        style={{ padding: "5px 8px 5px 8px" }}
+        onClick={handleStartQuiz}>
+        Start Quiz
+      </button>
     </div>
   );
 }

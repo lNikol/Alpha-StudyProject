@@ -4,7 +4,6 @@ const express = require("express");
 const upload = require("express-fileupload");
 const mongoose = require("mongoose");
 
-const authRouter = require("./routers/authRouter");
 const userRouter = require("./routers/userRouter");
 const cardRouter = require("./routers/cardRouter");
 const fileRouter = require("./routers/fileRouter");
@@ -27,7 +26,6 @@ app.use(
 app.use(upload());
 app.use(express.json());
 app.use(cookieParser());
-app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/user/card", cardRouter);
 app.use("/user/files", fileRouter);

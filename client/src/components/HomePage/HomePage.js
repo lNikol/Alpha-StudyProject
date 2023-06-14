@@ -16,14 +16,17 @@ export default function HomePage({ username }) {
     <div
       className="main-block"
       style={{
-        backgroundColor: "rgb(201, 200, 200)",
         textAlign: "center",
         padding: "20px",
+        backgroundColor: "#f0f0f0",
       }}>
-      <div style={{ color: "#fff", fontSize: "24px", marginBottom: "20px" }}>
+      <div style={{ color: "black", fontSize: "24px", marginBottom: "20px" }}>
         Welcome, {username}
       </div>
-      <div style={{ display: "inline-block" }}>
+      <div
+        style={{
+          display: "inline-block",
+        }}>
         {daysOfWeek.map((day) => (
           <div
             key={day}
@@ -32,12 +35,12 @@ export default function HomePage({ username }) {
               width: "45px",
               height: "45px",
               borderRadius: "50%",
-              border: "3px dotted #fff",
+              border: "3px dotted black",
               margin: "0 10px",
               textAlign: "center",
-              lineHeight: "35px",
-              backgroundColor:
-                currentDay === day ? "#FF7F50" : "rgb(201, 200, 200)",
+              lineHeight: "30px",
+              padding: "3px",
+              backgroundColor: currentDay === day ? "#F1B449" : "",
             }}>
             {day}
           </div>
@@ -52,11 +55,12 @@ export default function HomePage({ username }) {
             width: "100px",
             height: "100px",
             borderRadius: "50%",
-            border: "1px solid #fff",
+            border: "1px solid black",
             marginRight: "20px",
             textAlign: "center",
             lineHeight: "100px",
             color: "#fff",
+            background: "#EFA31C",
             textDecoration: "none",
           }}>
           Library
@@ -69,11 +73,12 @@ export default function HomePage({ username }) {
             width: "100px",
             height: "100px",
             borderRadius: "50%",
-            border: "1px solid #fff",
+            border: "1px solid black",
             marginRight: "20px",
             textAlign: "center",
             lineHeight: "100px",
             color: "#fff",
+            background: "#EFA31C",
             textDecoration: "none",
           }}>
           Profile
@@ -86,10 +91,11 @@ export default function HomePage({ username }) {
             width: "100px",
             height: "100px",
             borderRadius: "50%",
-            border: "1px solid #fff",
+            border: "1px solid black",
             textAlign: "center",
             lineHeight: "100px",
             color: "#fff",
+            background: "#EFA31C",
             textDecoration: "none",
           }}>
           Community

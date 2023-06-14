@@ -27,13 +27,25 @@ export default function CommunityBlock({ index, set, item }) {
       <ul
         className="list-group list-group-horizontal-sm"
         style={{ marginTop: "10px" }}>
-        <li className="list-group-item list-group-item-primary">{item.name}</li>
-        <li className="list-group-item list-group-item-secondary">
-          {item.descriptions.toString().split(",").join("/")}
+        <li className="list-group-item" style={{ background: "lightgray" }}>
+          {item.name}
         </li>
-        <li className="list-group-item list-group-item-success">
-          {item.tags.toString().split(",").join("/")}
-        </li>
+        {item.descriptions.map((i) => (
+          <li
+            key={i + set}
+            className="list-group-item"
+            style={{ background: "#F0F0F0" }}>
+            {i}
+          </li>
+        ))}
+        {item.tags.map((i) => (
+          <li
+            key={i + set}
+            className="list-group-item"
+            style={{ background: "#F1B449" }}>
+            {i}
+          </li>
+        ))}
       </ul>
     </>
   );

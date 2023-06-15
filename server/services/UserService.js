@@ -66,12 +66,13 @@ class UserService {
   async changePassword(username, password, newpassword) {
     const user = await User.findOne({ username });
     if (!user) throw ApiError.BadRequest("User wasn't found");
-    if (password === newpassword)
-      throw ApiError.BadRequest("The new password cannot match the old one");
-    const oldPassword = user.password;
-    const hashPassword = bcrypt.hashSync(newpassword, 7);
-    if (bcrypt.compareSync(password, oldPassword)) user.password = hashPassword;
-    else throw ApiError.BadRequest("Invalid password");
+
+    if (bcrypt.compareSync(password, user.password)) {
+      if (bcrypt.compareSync(newpassword, user.password))
+        throw ApiError.BadRequest("The new password cannot match the old one");
+      else user.password = bcrypt.hashSync(newpassword, 7);
+    } else throw ApiError.BadRequest("Invalid password");
+
     await user.save();
     return user;
   }
